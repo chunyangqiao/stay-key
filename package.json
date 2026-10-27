@@ -1,0 +1,30 @@
+{
+  "name": "stay-key",
+  "version": "0.1.0",
+  "description": "Save accounts, passwords, and other secrets on this computer. Generate strong random passwords when you need one",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "password-manager",
+    "chrome-extension",
+    "browser-extension",
+    "local-first",
+    "offline",
+    "password-generator",
+    "secrets",
+    "privacy"
+  ],
+  "author": "Joe <chunyangqiao91@gmail.com>",
+  "license": "MIT",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.15.0",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.15.0",
+  "type": "module"
+}

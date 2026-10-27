@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build
+dist/
+build/
+out/
+*.local
+
+# Chrome extension packaging
+*.crx
+*.pem
+*.zip
+web-ext-artifacts/
+
+# Secrets and local vault data
+.env
+.env.*
+!.env.example
+*.key
+*.kdbx
+vault/
+*.vault
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Test
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+*.swp
+*.swo
+.vscode/*
+!.vscode/extensions.json
