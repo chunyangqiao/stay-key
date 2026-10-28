@@ -12,6 +12,7 @@ out/
 *.crx
 *.pem
 *.zip
+release/
 web-ext-artifacts/
 
 # Secrets and local vault data
