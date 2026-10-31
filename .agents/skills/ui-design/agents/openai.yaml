@@ -1,0 +1,7 @@
+interface:
+  display_name: 'UI Design'
+  short_description: 'Design Tailwind tokens and adjust shadcn components'
+  default_prompt: 'Use $ui-design to design tokens in the named Tailwind CSS entry and adjust shadcn components in the named directory.'
+
+policy:
+  allow_implicit_invocation: true
