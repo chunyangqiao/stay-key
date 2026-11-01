@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { isValidMasterPin, MASTER_PIN_LENGTH, sanitizeMasterPinInput } from "@/shared/constants";
 import { useSessionStore } from "@/shared/session-store";
 import { unlockWithMasterPassword } from "@/shared/vault";
 
@@ -29,8 +30,13 @@ export function UnlockScreen() {
   const [pending, setPending] = React.useState(false);
 
   const coolingDown = cooldownUntil !== undefined && cooldownUntil > Date.now();
+  const canSubmit = isValidMasterPin(password) && !coolingDown && !pending;
 
   async function handleUnlock() {
+    if (!isValidMasterPin(password)) {
+      setError("请输入 6 位数字主密码。");
+      return;
+    }
     setPending(true);
     setError(undefined);
     try {
@@ -85,17 +91,23 @@ export function UnlockScreen() {
         <Label htmlFor="unlock-password">主密码</Label>
         <Input
           id="unlock-password"
-          type="password"
-          autoComplete="current-password"
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          pattern="[0-9]*"
+          maxLength={MASTER_PIN_LENGTH}
           value={password}
           disabled={coolingDown || pending}
-          onChange={(event) => setPassword(event.target.value)}
+          onChange={(event) => setPassword(sanitizeMasterPinInput(event.target.value))}
           onKeyDown={(event) => {
-            if (event.key === "Enter" && password && !coolingDown) {
+            if (event.key === "Enter" && canSubmit) {
               void handleUnlock();
             }
           }}
         />
+        <p className="text-xs text-muted-foreground">
+          请输入 6 位数字。若此前使用长口令设置，请通过「忘记主密码」重置。
+        </p>
       </div>
 
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
@@ -109,11 +121,7 @@ export function UnlockScreen() {
         </Alert>
       ) : null}
 
-      <Button
-        className="w-full"
-        disabled={coolingDown || pending || password.length === 0}
-        onClick={() => void handleUnlock()}
-      >
+      <Button className="w-full" disabled={!canSubmit} onClick={() => void handleUnlock()}>
         {pending ? "解锁中…" : "解锁"}
       </Button>
 

@@ -22,6 +22,13 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   void checkIdleLock();
 });
 
+/** OS screen lock clears the in-memory unlock session (PRD v0.7). */
+chrome.idle.onStateChanged.addListener((newState) => {
+  if (newState === "locked") {
+    void clearUnlockedSession();
+  }
+});
+
 async function checkIdleLock(): Promise<void> {
   const session = await readUnlockedSession();
   if (!session) {

@@ -5,7 +5,7 @@ import {
   COOLDOWN_MS,
   DEFAULT_CLIPBOARD_CLEAR_MS,
   DEFAULT_IDLE_LOCK_MS,
-  MASTER_PASSWORD_MIN_LENGTH,
+  isValidMasterPin,
   MAX_FAILED_ATTEMPTS,
   RECOVERY_ANSWER_MIN_LENGTH,
 } from "./constants";
@@ -22,9 +22,7 @@ import { readPersistedVault, writePersistedVault } from "./vault-storage";
 
 import type { CipherBlob, PersistedVault, VaultPayload } from "./vault-types";
 
-const masterPasswordSchema = z
-  .string()
-  .min(MASTER_PASSWORD_MIN_LENGTH, "主密码过短，请设置更长、更难猜的口令。");
+const masterPinSchema = z.string().refine(isValidMasterPin, "请输入 6 位数字主密码。");
 
 const recoveryAnswerSchema = z
   .string()
@@ -73,15 +71,11 @@ export async function vaultExists(): Promise<boolean> {
 
 export async function createVault(input: {
   masterPassword: string;
-  confirmMasterPassword: string;
   recoveryQuestion: string;
   recoveryAnswer: string;
   confirmRecoveryAnswer: string;
 }): Promise<{ dek: CryptoKey; vault: PersistedVault }> {
-  masterPasswordSchema.parse(input.masterPassword);
-  if (input.masterPassword !== input.confirmMasterPassword) {
-    throw new Error("两次输入的主密码不一致。");
-  }
+  masterPinSchema.parse(input.masterPassword);
 
   const question = input.recoveryQuestion.trim();
   if (question.length === 0) {
@@ -266,12 +260,8 @@ export async function resetMasterPassword(input: {
   dek: CryptoKey;
   vault: PersistedVault;
   masterPassword: string;
-  confirmMasterPassword: string;
 }): Promise<PersistedVault> {
-  masterPasswordSchema.parse(input.masterPassword);
-  if (input.masterPassword !== input.confirmMasterPassword) {
-    throw new Error("两次输入的主密码不一致。");
-  }
+  masterPinSchema.parse(input.masterPassword);
 
   const masterSalt = createSalt();
   const masterKek = await deriveAesKey(input.masterPassword, masterSalt);

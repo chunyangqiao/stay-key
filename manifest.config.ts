@@ -29,7 +29,7 @@ export default defineManifest({
     service_worker: "src/background/index.ts",
     type: "module",
   },
-  permissions: ["sidePanel", "storage", "alarms", "tabs"],
+  permissions: ["sidePanel", "storage", "alarms", "tabs", "idle"],
   commands: {
     _execute_action: {
       suggested_key: {

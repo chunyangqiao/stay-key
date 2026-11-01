@@ -18,7 +18,7 @@ export function WelcomeScreen() {
         本机密文保管站点账号与密码，打开面板即可查看与复制。
       </p>
       <p className="text-sm text-muted-foreground">
-        凭证仅以密文保存在本机；解锁需较长主密码。本期不做生成与自动填充。
+        凭证仅以密文保存在本机；解锁需 6 位数字主密码。本期不做生成与自动填充。
       </p>
       <Button className="mt-2 w-full" onClick={() => setScreen("master")}>
         开始设置

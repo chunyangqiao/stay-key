@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MASTER_PASSWORD_MIN_LENGTH } from "@/shared/constants";
+import { isValidMasterPin, MASTER_PIN_LENGTH, sanitizeMasterPinInput } from "@/shared/constants";
 import { getErrorMessage } from "@/shared/error-message";
 import { useSessionStore } from "@/shared/session-store";
 import { resetMasterPassword } from "@/shared/vault";
@@ -16,29 +16,19 @@ export function ResetMasterPasswordScreen() {
   const setUnlockedSession = useSessionStore((state) => state.setUnlockedSession);
 
   const [password, setPassword] = React.useState("");
-  const [confirm, setConfirm] = React.useState("");
   const [error, setError] = React.useState<string | undefined>();
   const [pending, setPending] = React.useState(false);
 
-  const tooShort = password.length > 0 && password.length < MASTER_PASSWORD_MIN_LENGTH;
-  const mismatch = confirm.length > 0 && password !== confirm;
-  const canSubmit =
-    Boolean(dek && vault) &&
-    password.length >= MASTER_PASSWORD_MIN_LENGTH &&
-    password === confirm &&
-    !pending;
+  const invalidLength = password.length > 0 && password.length !== MASTER_PIN_LENGTH;
+  const canSubmit = Boolean(dek && vault) && isValidMasterPin(password) && !pending;
 
   async function handleSave() {
     if (!dek || !vault) {
       setError("会话已失效，请重新找回。");
       return;
     }
-    if (password.length < MASTER_PASSWORD_MIN_LENGTH) {
-      setError("主密码过短，请设置更长、更难猜的口令。");
-      return;
-    }
-    if (password !== confirm) {
-      setError("两次输入的主密码不一致。");
+    if (!isValidMasterPin(password)) {
+      setError("请输入 6 位数字主密码。");
       return;
     }
 
@@ -49,7 +39,6 @@ export function ResetMasterPasswordScreen() {
         dek,
         vault,
         masterPassword: password,
-        confirmMasterPassword: confirm,
       });
       void setUnlockedSession({
         dek,
@@ -69,37 +58,32 @@ export function ResetMasterPasswordScreen() {
     <div className="flex flex-col gap-3">
       <h1 className="text-xl font-semibold text-foreground">设置新的主密码</h1>
       <p className="text-sm text-muted-foreground">
-        验证通过。为继续保护保险库，请立即设置新的主密码。
+        验证通过。为继续保护保险库，请立即设置 6 位数字主密码（只需输入一次）。
       </p>
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="reset-master-password">新主密码</Label>
         <Input
           id="reset-master-password"
-          type="password"
-          autoComplete="new-password"
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          pattern="[0-9]*"
+          maxLength={MASTER_PIN_LENGTH}
           value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          aria-invalid={tooShort || undefined}
+          onChange={(event) => setPassword(sanitizeMasterPinInput(event.target.value))}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && canSubmit) {
+              void handleSave();
+            }
+          }}
+          aria-invalid={invalidLength || undefined}
         />
-        {tooShort ? (
-          <p className="text-xs text-destructive">主密码过短，请设置更长、更难猜的口令。</p>
+        {invalidLength ? (
+          <p className="text-xs text-destructive">请输入 6 位数字主密码。</p>
         ) : (
-          <p className="text-xs text-muted-foreground">至少 {MASTER_PASSWORD_MIN_LENGTH} 位</p>
+          <p className="text-xs text-muted-foreground">6 位数字，输入时明文显示</p>
         )}
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="reset-master-password-confirm">确认新主密码</Label>
-        <Input
-          id="reset-master-password-confirm"
-          type="password"
-          autoComplete="new-password"
-          value={confirm}
-          onChange={(event) => setConfirm(event.target.value)}
-          aria-invalid={mismatch || undefined}
-        />
-        {mismatch ? <p className="text-xs text-destructive">两次输入的主密码不一致。</p> : null}
       </div>
 
       {error ? <p className="text-xs text-destructive">{error}</p> : null}

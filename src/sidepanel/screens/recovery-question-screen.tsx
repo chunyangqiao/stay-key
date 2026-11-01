@@ -50,7 +50,6 @@ export function RecoveryQuestionScreen() {
     try {
       const { dek, vault } = await createVault({
         masterPassword,
-        confirmMasterPassword: masterPassword,
         recoveryQuestion: question,
         recoveryAnswer: answer,
         confirmRecoveryAnswer: confirm,
