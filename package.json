@@ -28,6 +28,7 @@
   "type": "module",
   "devDependencies": {
     "@crxjs/vite-plugin": "^3.0.0",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/chrome": "^0.3.6",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
@@ -37,12 +38,16 @@
     "lint-staged": "^17.6.0",
     "oxfmt": "^0.74.0",
     "oxlint": "^1.89.0",
+    "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
     "vite-plugin-zip-pack": "^1.2.4"
   },
   "dependencies": {
+    "@base-ui/react": "^1.9.0",
+    "cn": "^0.5.1",
     "date-fns": "^4.4.0",
+    "lucide-react": "^1.66.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
