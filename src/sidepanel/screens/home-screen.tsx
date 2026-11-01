@@ -5,7 +5,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { readActiveTabHost } from "@/shared/active-tab";
 import { copySecret } from "@/shared/clipboard";
+import { maskAccount } from "@/shared/mask";
 import { DEFAULT_CLIPBOARD_CLEAR_MS } from "@/shared/constants";
 import { createEntryId, parseTags, searchEntries } from "@/shared/entries";
 import { useSessionStore } from "@/shared/session-store";
@@ -42,15 +44,39 @@ export function HomeScreen() {
   const [draft, setDraft] = React.useState<Draft>(emptyDraft);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
+  const [activeHost, setActiveHost] = React.useState<string | undefined>();
+
+  React.useEffect(() => {
+    void (async () => {
+      setActiveHost(await readActiveTabHost());
+    })();
+  }, []);
 
   const entries = payload?.entries ?? [];
-  const visible = React.useMemo(() => searchEntries(entries, query), [entries, query]);
+  const visible = React.useMemo(() => {
+    const matched = searchEntries(entries, query);
+    if (!activeHost) {
+      return matched;
+    }
+    return [...matched].sort((a, b) => {
+      const aHit = a.host === activeHost || a.host.endsWith(`.${activeHost}`) ? 0 : 1;
+      const bHit = b.host === activeHost || b.host.endsWith(`.${activeHost}`) ? 0 : 1;
+      return aHit - bHit;
+    });
+  }, [entries, query, activeHost]);
   const clipboardClearMs = vault?.settings.clipboardClearMs ?? DEFAULT_CLIPBOARD_CLEAR_MS;
 
   const openCreate = () => {
     setDraft(emptyDraft());
     setError(undefined);
     setEditor({ kind: "create" });
+    void (async () => {
+      const host = await readActiveTabHost();
+      if (!host) {
+        return;
+      }
+      setDraft((prev) => (prev.host.trim() ? prev : { ...prev, host }));
+    })();
   };
 
   const openEdit = (entry: VaultEntry) => {
@@ -261,8 +287,16 @@ export function HomeScreen() {
           {visible.map((entry) => (
             <li key={entry.id} className="rounded-xl border border-border bg-card p-3">
               <button type="button" className="w-full text-left" onClick={() => openEdit(entry)}>
-                <p className="text-sm font-medium text-foreground">{entry.host}</p>
-                <p className="text-sm text-muted-foreground">{entry.username}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-foreground">{entry.host}</p>
+                  {activeHost &&
+                  (entry.host === activeHost || entry.host.endsWith(`.${activeHost}`)) ? (
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[0.75rem] font-medium text-secondary-foreground">
+                      当前站
+                    </span>
+                  ) : null}
+                </div>
+                <p className="text-sm text-muted-foreground">{maskAccount(entry.username)}</p>
               </button>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <Button
