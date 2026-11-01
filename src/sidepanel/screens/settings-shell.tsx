@@ -46,17 +46,15 @@ export function SettingsNavCard({
   }[];
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
-      {items.map((item, index) => {
+    <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+      {items.map((item) => {
         const Icon = item.icon;
         return (
           <button
             key={item.title}
             type="button"
             onClick={item.onClick}
-            className={`flex min-h-11 w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent ${
-              index > 0 ? "border-t border-border" : ""
-            }`}
+            className="flex min-h-11 w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent"
           >
             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
               <Icon className="size-4" />
@@ -86,11 +84,11 @@ export function SettingsOptionList<T extends string | number>({
 }) {
   return (
     <div
-      className="overflow-hidden rounded-xl border border-border bg-card"
+      className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card"
       role="radiogroup"
       aria-label={name}
     >
-      {options.map((option, index) => {
+      {options.map((option) => {
         const selected = option.value === value;
         return (
           <button
@@ -99,15 +97,18 @@ export function SettingsOptionList<T extends string | number>({
             role="radio"
             aria-checked={selected}
             onClick={() => onChange(option.value)}
-            className={`flex w-full items-center gap-2.5 px-3 py-2 text-left ${
-              index > 0 ? "border-t border-border" : ""
-            } ${selected ? "bg-primary/10" : "hover:bg-accent"}`}
+            className={`flex w-full items-center gap-2.5 border-0 px-3 py-2 text-left outline-none ${
+              selected
+                ? "bg-[color-mix(in_oklab,var(--primary)_10%,transparent)]"
+                : "bg-transparent hover:bg-accent"
+            }`}
           >
             <span
+              aria-hidden
               className={`size-3.5 shrink-0 rounded-full border-2 ${
                 selected
                   ? "border-primary bg-primary shadow-[inset_0_0_0_3px_var(--card)]"
-                  : "border-border"
+                  : "border-border bg-transparent"
               }`}
             />
             <span className="text-sm font-medium text-foreground">{option.label}</span>
@@ -131,11 +132,11 @@ export function SettingsSegmented<T extends string | number>({
 }) {
   return (
     <div
-      className="grid w-full grid-cols-3 overflow-hidden rounded-xl border border-border bg-card"
+      className="grid w-full grid-cols-3 divide-x divide-border overflow-hidden rounded-xl border border-border bg-card"
       role="radiogroup"
       aria-label={name}
     >
-      {options.map((option, index) => {
+      {options.map((option) => {
         const selected = option.value === value;
         return (
           <button
@@ -144,9 +145,11 @@ export function SettingsSegmented<T extends string | number>({
             role="radio"
             aria-checked={selected}
             onClick={() => onChange(option.value)}
-            className={`px-2 py-2 text-center text-sm font-medium ${
-              index > 0 ? "border-l border-border" : ""
-            } ${selected ? "bg-primary/10 text-foreground" : "text-muted-foreground hover:bg-accent"}`}
+            className={`border-0 px-2 py-2 text-center text-sm font-medium outline-none ${
+              selected
+                ? "bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] text-foreground"
+                : "bg-transparent text-muted-foreground hover:bg-accent"
+            }`}
           >
             {option.label}
           </button>

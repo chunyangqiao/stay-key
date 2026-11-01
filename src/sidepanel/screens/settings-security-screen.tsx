@@ -14,7 +14,8 @@ import {
 
 const CLIPBOARD_SEGMENTED = CLIPBOARD_CLEAR_OPTIONS_MS.map((option) => ({
   value: option.value,
-  label: option.label.replace("（默认）", "").replace(" 秒", "s"),
+  // Canvas / Edward: full-width Segmented labels are 15 / 30 / 60
+  label: String(Math.round(option.value / 1000)),
 }));
 
 export function SettingsSecurityScreen() {
