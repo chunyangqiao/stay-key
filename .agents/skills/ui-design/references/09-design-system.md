@@ -14,7 +14,7 @@ Create `design-tokens.json` and its generated files only when the user asks for 
 node scripts/design-system.mjs init --brand '#0f766e' --name 'Lumen' --out design
 ```
 
-This writes `design-tokens.json`, `tokens.css`, `theme.css`, `DESIGN.md`, and `preview.html`. Review and localize the starter; enrich `DESIGN.md` with product decisions. Generated colors and roles are a foundation, not approved brand design. The CLI initializes a dark mode by default. Merge the reviewed roles into the user's Tailwind entry when that entry is the project source of truth.
+This writes `design-tokens.json`, `tokens.css`, `theme.css`, `DESIGN.md`, and `preview.html`. `design-tokens.json` remains the input for the CSS package. `DESIGN.md` is a DESIGN.md spec document; its format, section order, and dark-value suffix live in [the format reference](design-md.md). Unless `meta.description` is set, the generated Overview says the visual direction is not yet decided. A color with no known use says to state what that color is for. Replace both from the product brief before treating the file as approved. Where a product rule goes is in that format reference. Generated colors and roles are a foundation, not approved brand design. The CLI initializes a dark mode by default. Merge the reviewed roles into the user's Tailwind entry when that entry is the project source of truth.
 
 Generate a color ramp directly when useful:
 
@@ -26,11 +26,12 @@ Validate or emit a reviewed token file:
 
 ```sh
 node scripts/design-system.mjs validate design/design-tokens.json
+node scripts/design-system.mjs validate design/DESIGN.md
 node scripts/design-system.mjs emit design/design-tokens.json --out design-next --dry-run
 node scripts/design-system.mjs emit design/design-tokens.json --out design-next
 ```
 
-Validation checks schema, references, and declared light/dark contrast pairs. A passing CLI check does not certify accessibility or visual quality.
+Validation of the JSON package checks schema, references, and declared light/dark contrast pairs. Validation of `DESIGN.md` checks the spec tokens and section order. A passing CLI check does not certify accessibility or visual quality.
 
 After changing tokens, emit into a fresh directory and merge the reviewed result. Existing byte-identical files are no-ops; changed generated files are conflicts. The CLI does not overwrite them in place. A source JSON may share its own output path, but changed CSS or documentation still require a fresh destination.
 
@@ -48,7 +49,7 @@ The root object contains `version: 1`, `meta` (including the system `name`), `pr
 - `semantic.color` maps UI roles to primitive references. References use braces, for example `{primitive.color.brand.600}`.
 - `modes.dark.color` overrides semantic roles for dark mode.
 - `pairs` names foreground/background checks. Each pair references semantic values, for example `{semantic.color.foreground}` and `{semantic.color.background}`, with `kind: 'text' | 'ui'` and optional `fontSize` / `fontWeight`.
-- Generated color values use hex. This describes the standalone package. A project's existing color format stays as it is.
+- Generated color values in this package use hex. A `DESIGN.md` accepts CSS colors, as the format reference describes. A project's existing color format stays as it is.
 
 The supported semantic roles are: `background`, `foreground`, `card`, `card-foreground`, `muted`, `muted-foreground`, `primary`, `primary-foreground`, `primary-hover`, `secondary`, `secondary-foreground`, `destructive`, `destructive-foreground`, `success`, `success-foreground`, `warning`, `warning-foreground`, `border`, `input`, and `ring`.
 

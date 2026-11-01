@@ -2,26 +2,39 @@
 import { realpathSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { parseDesignDocument } from './lib/design-md.mjs';
 import { buildArtifacts, writeArtifacts } from './lib/emit.mjs';
 import { generatePalette } from './lib/palette.mjs';
 import { createTokens, validateTokens } from './lib/tokens.mjs';
 
 export { generatePalette, contrastRatio, hexToHsl } from './lib/palette.mjs';
 export { createTokens, resolveToken, validateTokens } from './lib/tokens.mjs';
+export { parseDesignDocument, projectColorModes } from './lib/design-md.mjs';
 export { buildArtifacts, writeArtifacts } from './lib/emit.mjs';
 export const SKILL_ROOT = fileURLToPath(new URL('..', import.meta.url));
+
+function designReport(source) {
+  const document = parseDesignDocument(source);
+  return {
+    valid: true,
+    warnings: document.warnings,
+    sections: document.sections.flatMap((section) => (section.key ? [section.key] : [])),
+  };
+}
 
 const HELP = `Usage: node scripts/design-system.mjs <command> [options]
 
   init --brand '#0f766e' --name 'Lumen' --out DIR [--dry-run]
   palette --base '#0f766e'
-  validate TOKENS.json
+  validate TOKENS.json | DESIGN.md
   emit TOKENS.json --out DIR [--dry-run]
 
 init/emit produce design-tokens.json, tokens.css, theme.css (Tailwind v4),
-DESIGN.md, and a self-contained preview.html. Existing conflicting files are
-never overwritten. Dry-run reports every destination and writes nothing.
-Colors support #rgb/#rrggbb only; other encodings and alpha are unsupported.
+DESIGN.md, and a self-contained preview.html. DESIGN.md follows the DESIGN.md
+spec: YAML tokens are normative and markdown sections stay in spec order.
+Existing conflicting files are never overwritten. Dry-run reports every
+destination and writes nothing. The JSON package stores colors as hex.
+DESIGN.md accepts CSS colors.
 `;
 
 function parseArguments(args) {
@@ -87,15 +100,18 @@ export async function runCli(
       stdout(`${JSON.stringify(generatePalette(options.base), null, 2)}\n`);
       return 0;
     }
+    if (command === 'validate') {
+      const source = await readFile(inputPath, 'utf8');
+      const report = inputPath.toLowerCase().endsWith('.md')
+        ? designReport(source)
+        : validateTokens(JSON.parse(source));
+      stdout(`${JSON.stringify(report, null, 2)}\n`);
+      return report.valid ? 0 : 1;
+    }
     const tokens =
       command === 'init'
         ? createTokens({ brand: options.brand, name: options.name })
         : JSON.parse(await readFile(inputPath, 'utf8'));
-    if (command === 'validate') {
-      const report = validateTokens(tokens);
-      stdout(`${JSON.stringify(report, null, 2)}\n`);
-      return report.valid ? 0 : 1;
-    }
     const report = await writeArtifacts(buildArtifacts(tokens), options.out, {
       dryRun: Boolean(options['dry-run']),
       inputPath,

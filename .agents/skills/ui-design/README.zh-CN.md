@@ -1,9 +1,10 @@
 # UI Design
 
-按设计原则，在用户指定的 Tailwind CSS v4 入口里设计 Design Token，并调整该项目基础组件目录中的 shadcn 组件。
+按 DESIGN.md 规范读写设计系统文档，并按设计原则，在用户指定的 Tailwind CSS v4 入口里设计 Design Token，调整该项目基础组件目录中的 shadcn 组件。
 
 ## 内容
 
+- 符合 DESIGN.md 规范的设计系统文档：YAML token 加上规定顺序的章节。格式见 [DESIGN.md 格式](references/design-md.md)。
 - 视觉层级、布局、排版、颜色、层次、图像和细节的指导。
 - 无障碍、交互、暗色主题、动效和数据可视化的可选参考。
 - 用户明确要求独立令牌包时，用于生成和校验该包的 CLI。

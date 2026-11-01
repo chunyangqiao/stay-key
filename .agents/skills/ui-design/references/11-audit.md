@@ -47,7 +47,7 @@ Mark each observation **rendered**, **code-only**, or **automated check**. Sourc
 
 ## Review sequence
 
-Inspect seven lenses in order: **hierarchy → layout and spacing → typography → color → depth → images and icons → finishing**. Skip a lens with no relevant surface. Structural changes can resolve later cosmetic findings; merge duplicates and report a systemic cause once rather than listing every instance.
+Inspect seven lenses in order: **hierarchy → layout and spacing → typography → color → depth → images and icons → finishing**. Skip a lens with no relevant surface. When the project has a `DESIGN.md`, also compare the surface with that file's tokens and Do's and Don'ts. Load [the format reference](design-md.md) only to interpret the file. A missing `DESIGN.md` is not a finding. Structural changes can resolve later cosmetic findings; merge duplicates and report a systemic cause once rather than listing every instance.
 
 Use this sweep checklist before writing the report. Record applicable checks even when no defect is found; load a lens reference when a judgment needs more context.
 

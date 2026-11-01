@@ -36,3 +36,19 @@ Adjust components in the named directory so color and state use the project's se
 In React server-component frameworks, keep interactive components on their existing client boundary. Adapt imports to the app's aliases. The directory the user named is where those components live.
 
 Component work is done when the edited components reference those semantic roles and their public props are unchanged.
+
+## DESIGN.md roles
+
+When applying a `DESIGN.md`, map its color tokens onto the names already in the project. This is the only map for those aliases. The `-dark` suffix is defined in [the DESIGN.md format](design-md.md).
+
+| DESIGN.md token | Project role |
+| --- | --- |
+| surface | background |
+| on-surface | foreground |
+| error | destructive |
+| primary | primary |
+| secondary | secondary |
+
+A token whose name is already a project role keeps that name. A color token with no project role becomes an additional CSS variable. Do not rename the project's existing tokens to match an unmatched DESIGN.md name.
+
+Component tokens adjust the component that already implements that part. `button-primary` and `button-primary-hover` style the primary variant and its hover state. `button-secondary` styles the secondary variant. `input` styles the text input. Keep the public props and variant names. Add a variant only when the project already has that variant.

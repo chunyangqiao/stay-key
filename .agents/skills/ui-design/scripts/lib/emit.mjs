@@ -1,7 +1,8 @@
 import { mkdir, open, readFile, realpath, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
-import { effectiveTokens, flattenTokens, resolveToken, validateTokens } from './tokens.mjs';
+import { renderDesignDocument } from './design-md.mjs';
+import { effectiveTokens, flattenTokens, validateTokens } from './tokens.mjs';
 
 const variable = (tokenPath) =>
   `--ui-${tokenPath.replace(/^(primitive|semantic)\./, '').replaceAll('.', '-')}`;
@@ -50,43 +51,8 @@ export function emitTheme(tokens) {
   return `@import "tailwindcss";\n@import "./tokens.css";\n\n@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));\n\n@theme inline {\n${lines.join('\n')}\n}\n`;
 }
 
-function markdownText(value) {
-  return String(value)
-    .replaceAll('\\', '\\\\')
-    .replaceAll('|', '\\|')
-    .replaceAll('`', '\\`')
-    .replace(/[\r\n]+/g, ' ')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;');
-}
-
 export function emitDesign(tokens) {
-  const heading = markdownText(tokens.meta.name);
-  const table = (group) =>
-    `| Token | Value |\n| --- | --- |\n${Object.entries(tokens.primitive[group])
-      .map(
-        ([key, value]) => `| ${markdownText(key)} | ${markdownText(resolveToken(value, tokens))} |`,
-      )
-      .join('\n')}`;
-  const roles = Object.keys(tokens.semantic.color)
-    .map(
-      (role) =>
-        `| ${role} | ${resolveToken(`{semantic.color.${role}}`, tokens)} | ${tokens.modes?.dark ? resolveToken(`{semantic.color.${role}}`, tokens, { mode: 'dark' }) : '—'} |`,
-    )
-    .join('\n');
-  return `# ${heading} design system\n\nThis is a generated starter. The user or agent should record personality decisions here: audience, tone, density, typography, corner style, visual hierarchy, and references. Validate those choices in the real interface.\n\n## Source and integration\n\n- Edit design-tokens.json as the source of truth. Values reference absolute paths, for example {primitive.color.brand.600} and {semantic.color.primary}.\n- Colors support #rgb and #rrggbb only. RGB/HSL functions, alpha, named colors, and color-mix are unsupported.\n- Use semantic color roles in components; reserve primitive color ramps for defining those roles.\n- For Tailwind CSS v4, import theme.css into the application entry stylesheet. It imports Tailwind and tokens.css and exposes utilities such as bg-primary, text-primary-foreground, rounded-md, font-semibold, and p-4.\n- For framework-neutral use, load tokens.css and use var(--ui-color-background), var(--ui-color-foreground), and the other runtime variables.\n- Apply .dark or data-theme="dark" to an ancestor to select dark mode. The preview toggle applies it to the document root.\n- Preserve an existing project theme. Generate into a new directory, review the diff, then merge the chosen roles and scales. The CLI never overwrites conflicting output files.\n- To regenerate after edits, emit into a fresh directory and review the result. An input design-tokens.json may share its output path; other changed outputs still conflict.\n\n## Semantic color roles\n\n| Role | Light | Dark |\n| --- | --- | --- |\n${roles}\n\nUse background/foreground for page content, card/card-foreground for raised surfaces, and muted/muted-foreground for supporting information. Use primary for the main action, secondary for lower emphasis actions, and destructive/success/warning for status. Pair each fill with its matching foreground role. Primary-hover shares primary-foreground. Ring identifies focus against background. Border is decorative; input defines the input boundary against page and card surfaces. Use the background role for the input fill. Destructive also supports form error text on page and card surfaces. Check any new adjacent surfaces or text combinations explicitly in pairs.\n\n## Type\n\nUse a small number of sizes to establish hierarchy; body text starts at base. Use semibold for emphasis and tight leading for headings. Font stacks stay local and require no network request.\n\n${table('font')}\n\n${table('text')}\n\n${table('weight')}\n\n${table('leading')}\n\n## Spacing\n\nUse small intervals within related groups and larger intervals between sections. Keep repeated layouts on this scale.\n\n${table('spacing')}\n\n## Radius and elevation\n\nKeep corner treatments consistent. Use shadows to communicate elevation; do not rely on shadows alone to distinguish controls.\n\n${table('radius')}\n\n${table('shadow')}\n\n## Color ramps\n\nStop 500 anchors the supplied color. The ramp bisects lightness, compensates saturation, and caps hue rotation at 20 degrees. Very light or dark anchors adapt the endpoints; pure black or white can repeat at an endpoint. Inspect the result visually before adopting it.\n\n${Object.entries(
-    tokens.primitive.color,
-  )
-    .filter(([, value]) => value && typeof value === 'object')
-    .map(
-      ([name, ramp]) =>
-        `### ${name}\n\n| Stop | Hex |\n| --- | --- |\n${Object.entries(ramp)
-          .map(([stop, hex]) => `| ${stop} | ${hex} |`)
-          .join('\n')}`,
-    )
-    .join(
-      '\n\n',
-    )}\n\n## Contrast and decisions to record\n\nValidation resolves token aliases again for each declared mode. Normal text requires 4.5:1; text at least 24px, or at least 18.6667px with weight 700 or greater, requires 3:1. UI pairs require 3:1. These checks cover declared pairs only; verify actual components, focus states, disabled states, images, and content in context.\n\nRecord approved personality choices, exceptions, newly tested pairs, and the reason for each scale change here.\n`;
+  return renderDesignDocument(tokens);
 }
 
 export function emitPreview(tokens) {
