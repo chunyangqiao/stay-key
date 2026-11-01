@@ -29,11 +29,5 @@ export default defineManifest({
     service_worker: "src/background/index.ts",
     type: "module",
   },
-  content_scripts: [
-    {
-      js: ["src/content/main.ts"],
-      matches: ["https://*/*"],
-    },
-  ],
-  permissions: ["sidePanel"],
+  permissions: ["sidePanel", "storage"],
 });
