@@ -17,7 +17,7 @@ export function MasterPasswordScreen() {
 
   function handleNext() {
     if (!isValidMasterPin(password)) {
-      setError("请输入 6 位数字主密码。");
+      setError("请输入 6 位数字。");
       return;
     }
     setError(undefined);
@@ -28,9 +28,7 @@ export function MasterPasswordScreen() {
   return (
     <div className="flex flex-col gap-3">
       <h1 className="text-xl font-semibold text-foreground">设置主密码</h1>
-      <p className="text-sm text-muted-foreground">
-        用于解锁本机保险库。请设置 6 位数字主密码（只需输入一次）。
-      </p>
+      <p className="text-sm text-muted-foreground">用于解锁本机保险库。请设置 6 位数字。</p>
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="master-password">主密码</Label>
@@ -42,6 +40,7 @@ export function MasterPasswordScreen() {
           pattern="[0-9]*"
           maxLength={MASTER_PIN_LENGTH}
           value={password}
+          className="tracking-[0.2em]"
           onChange={(event) => setPassword(sanitizeMasterPinInput(event.target.value))}
           onKeyDown={(event) => {
             if (event.key === "Enter" && canSubmit) {
@@ -50,7 +49,11 @@ export function MasterPasswordScreen() {
           }}
           aria-invalid={invalidLength || undefined}
         />
-        <p className="text-xs text-muted-foreground">6 位数字，输入时明文显示</p>
+        {invalidLength ? (
+          <p className="text-xs text-destructive">请输入 6 位数字。</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">请输入 6 位数字</p>
+        )}
       </div>
 
       {error ? <p className="text-xs text-destructive">{error}</p> : null}

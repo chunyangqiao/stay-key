@@ -34,7 +34,7 @@ export function UnlockScreen() {
 
   async function handleUnlock() {
     if (!isValidMasterPin(password)) {
-      setError("请输入 6 位数字主密码。");
+      setError("请输入 6 位数字。");
       return;
     }
     setPending(true);
@@ -77,57 +77,52 @@ export function UnlockScreen() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <img
-        src="/icon128.png"
-        alt=""
-        width={40}
-        height={40}
-        className="mx-auto size-10 rounded-full"
-      />
-      <h1 className="text-center text-xl font-semibold text-foreground">保险库已锁定</h1>
+    <div className="flex flex-1 flex-col items-center justify-center">
+      <div className="flex w-full flex-col gap-3">
+        <img src="/icon128.png" alt="" width={40} height={40} className="mx-auto size-10" />
+        <h1 className="text-center text-xl font-semibold text-foreground">保险库已锁定</h1>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="unlock-password">主密码</Label>
-        <Input
-          id="unlock-password"
-          type="text"
-          inputMode="numeric"
-          autoComplete="off"
-          pattern="[0-9]*"
-          maxLength={MASTER_PIN_LENGTH}
-          value={password}
-          disabled={coolingDown || pending}
-          onChange={(event) => setPassword(sanitizeMasterPinInput(event.target.value))}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && canSubmit) {
-              void handleUnlock();
-            }
-          }}
-        />
-        <p className="text-xs text-muted-foreground">
-          请输入 6 位数字。若此前使用长口令设置，请通过「忘记主密码」重置。
-        </p>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="unlock-password">主密码</Label>
+          <Input
+            id="unlock-password"
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            pattern="[0-9]*"
+            maxLength={MASTER_PIN_LENGTH}
+            value={password}
+            disabled={coolingDown || pending}
+            className="text-center tracking-[0.2em]"
+            onChange={(event) => setPassword(sanitizeMasterPinInput(event.target.value))}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && canSubmit) {
+                void handleUnlock();
+              }
+            }}
+          />
+          <p className="text-center text-xs text-muted-foreground">请输入 6 位数字</p>
+        </div>
+
+        {error ? <p className="text-center text-xs text-destructive">{error}</p> : null}
+
+        {coolingDown ? (
+          <Alert variant="destructive">
+            <AlertTitle>尝试次数过多</AlertTitle>
+            <AlertDescription>
+              请{formatCooldown(cooldownUntil)}后再试（不会清空保险库）。
+            </AlertDescription>
+          </Alert>
+        ) : null}
+
+        <Button className="w-full" disabled={!canSubmit} onClick={() => void handleUnlock()}>
+          {pending ? "解锁中…" : "解锁"}
+        </Button>
+
+        <Button variant="link" className="w-full" onClick={() => setScreen("recover")}>
+          忘记主密码？
+        </Button>
       </div>
-
-      {error ? <p className="text-xs text-destructive">{error}</p> : null}
-
-      {coolingDown ? (
-        <Alert variant="destructive">
-          <AlertTitle>尝试次数过多</AlertTitle>
-          <AlertDescription>
-            请{formatCooldown(cooldownUntil)}后再试（不会清空保险库）。
-          </AlertDescription>
-        </Alert>
-      ) : null}
-
-      <Button className="w-full" disabled={!canSubmit} onClick={() => void handleUnlock()}>
-        {pending ? "解锁中…" : "解锁"}
-      </Button>
-
-      <Button variant="link" className="w-full" onClick={() => setScreen("recover")}>
-        忘记主密码？
-      </Button>
     </div>
   );
 }

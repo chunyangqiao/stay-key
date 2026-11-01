@@ -29,14 +29,14 @@ export function SidePanel() {
 
   if (!hydrated) {
     return (
-      <main className="p-4">
+      <main className="flex min-h-dvh flex-col p-4">
         <p className="text-sm text-muted-foreground">加载中…</p>
       </main>
     );
   }
 
   return (
-    <main className="p-4">
+    <main className="flex min-h-dvh flex-col p-4">
       {screen === "welcome" ? <WelcomeScreen /> : null}
       {screen === "master" ? <MasterPasswordScreen /> : null}
       {screen === "question" ? <RecoveryQuestionScreen /> : null}

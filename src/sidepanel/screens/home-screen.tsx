@@ -197,8 +197,8 @@ export function HomeScreen() {
   if (editor.kind !== "closed") {
     return (
       <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-2">
-          <h1 className="text-xl font-semibold text-foreground">
+        <div className="flex items-center justify-between gap-2 border-b border-border pb-2">
+          <h1 className="text-lg font-semibold text-foreground">
             {editor.kind === "edit" ? "编辑条目" : "新建条目"}
           </h1>
           <Button variant="ghost" size="sm" type="button" onClick={closeEditor}>
@@ -268,9 +268,9 @@ export function HomeScreen() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold text-foreground">Stay Key</h1>
+    <div className="flex flex-1 flex-col gap-3">
+      <div className="flex items-center justify-between gap-2 border-b border-border pb-2">
+        <h1 className="text-lg font-semibold text-foreground">Stay Key</h1>
         <div className="flex items-center gap-1">
           <Button
             type="button"
@@ -290,16 +290,18 @@ export function HomeScreen() {
       {tabInfo === undefined ? null : tabInfo.kind === "none" ? (
         <p className="text-xs text-muted-foreground">当前页无站点</p>
       ) : (
-        <div className="rounded-xl border border-border bg-card p-3">
-          <p className="text-sm font-medium text-foreground">当前站点</p>
-          <p className="text-xs text-muted-foreground">{tabInfo.host}</p>
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
+          <div className="px-3 pt-3">
+            <p className="text-sm font-medium text-foreground">当前站点</p>
+            <p className="text-xs text-muted-foreground">{tabInfo.host}</p>
+          </div>
           {siteEntries.length > 0 ? (
-            <ul className="mt-2 flex flex-col gap-2">
+            <ul className="mt-1 divide-y divide-border">
               {siteEntries.map((entry) => (
-                <li key={entry.id} className="rounded-lg border border-border/80 p-2">
+                <li key={entry.id} className="px-3 py-2.5">
                   <button
                     type="button"
-                    className="w-full text-left"
+                    className="w-full rounded-lg text-left hover:bg-accent/60"
                     onClick={() => openEdit(entry)}
                   >
                     <p className="text-sm text-muted-foreground">{maskAccount(entry.username)}</p>
@@ -326,9 +328,9 @@ export function HomeScreen() {
               ))}
             </ul>
           ) : (
-            <div className="mt-2 flex flex-col gap-2">
+            <div className="flex flex-col items-center gap-2 px-3 py-6 text-center">
               <p className="text-sm text-muted-foreground">本站暂无保存的账号</p>
-              <Button type="button" onClick={() => openCreate(tabInfo.host)}>
+              <Button type="button" className="w-full" onClick={() => openCreate(tabInfo.host)}>
                 保存到本站
               </Button>
             </div>
@@ -350,13 +352,20 @@ export function HomeScreen() {
       </div>
       <p className="text-xs font-medium text-foreground">全部条目</p>
       {visible.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
-          {entries.length === 0 ? "暂无条目。点「新建」或「保存到本站」。" : "没有匹配的条目。"}
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 px-2 py-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            {entries.length === 0 ? "暂无条目" : "没有匹配的条目"}
+          </p>
+          {entries.length === 0 ? (
+            <Button type="button" variant="secondary" onClick={() => openCreate()}>
+              新建
+            </Button>
+          ) : null}
         </div>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
           {visible.map((entry) => (
-            <li key={entry.id} className="rounded-xl border border-border bg-card p-3">
+            <li key={entry.id} className="px-3 py-2.5 hover:bg-accent/50">
               <button type="button" className="w-full text-left" onClick={() => openEdit(entry)}>
                 <p className="text-sm font-medium text-foreground">{entry.host}</p>
                 <p className="text-sm text-muted-foreground">{maskAccount(entry.username)}</p>
@@ -386,7 +395,7 @@ export function HomeScreen() {
           ))}
         </ul>
       )}
-      <p className="text-xs text-muted-foreground">
+      <p className="mt-auto text-xs text-muted-foreground">
         复制后约 {Math.round(clipboardClearMs / 1000)} 秒清空剪贴板 · 空闲自动锁定
       </p>
     </div>
