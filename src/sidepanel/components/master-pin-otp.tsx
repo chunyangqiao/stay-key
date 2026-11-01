@@ -147,13 +147,7 @@ export function MasterPinOtp({
       role="group"
       aria-label={ariaLabel}
       aria-invalid={invalid || undefined}
-      className={cn(
-        "grid grid-cols-6 overflow-hidden rounded-lg border bg-background",
-        "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring",
-        "aria-invalid:has-[:focus-visible]:outline-destructive",
-        invalid ? "border-destructive" : "border-input",
-        className,
-      )}
+      className={cn("grid grid-cols-6 gap-2", className)}
     >
       {Array.from({ length: MASTER_PIN_LENGTH }, (_, index) => (
         <input
@@ -162,7 +156,7 @@ export function MasterPinOtp({
             inputsRef.current[index] = node;
           }}
           id={index === 0 ? id : `${id}-${index}`}
-          type="text"
+          type="password"
           inputMode="numeric"
           autoComplete="one-time-code"
           pattern="[0-9]*"
@@ -171,11 +165,14 @@ export function MasterPinOtp({
           disabled={disabled}
           autoFocus={autoFocus && index === 0}
           aria-label={`${ariaLabel} 第 ${index + 1} 位`}
+          aria-invalid={invalid || undefined}
           className={cn(
-            "h-12 w-full min-w-0 appearance-none rounded-none border-0 bg-transparent text-center text-lg font-medium tabular-nums text-foreground outline-none transition-colors",
-            index > 0 && "border-l border-border",
-            "focus-visible:bg-foreground/[0.03]",
+            "h-12 w-full min-w-0 appearance-none rounded-lg border bg-background text-center text-lg font-medium tabular-nums text-foreground transition-colors",
+            "focus-visible:outline-2 focus-visible:outline-offset-[-1px]",
             "disabled:bg-secondary disabled:text-muted-foreground",
+            invalid
+              ? "border-destructive focus-visible:border-destructive focus-visible:outline-destructive"
+              : "border-input focus-visible:border-primary focus-visible:outline-ring",
           )}
           onChange={(event) => handleChange(index, event.target.value)}
           onKeyDown={(event) => handleKeyDown(index, event)}
