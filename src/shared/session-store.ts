@@ -12,7 +12,19 @@ import { loadVaultPayload, vaultExists } from "./vault";
 
 import type { PersistedVault, VaultPayload } from "./vault-types";
 
-export type AppScreen = "welcome" | "master" | "question" | "unlock" | "recover" | "reset" | "home";
+export type AppScreen =
+  | "welcome"
+  | "master"
+  | "question"
+  | "unlock"
+  | "recover"
+  | "reset"
+  | "home"
+  | "settings"
+  | "settings-general"
+  | "settings-shortcuts"
+  | "settings-security"
+  | "settings-about";
 
 type SessionStore = {
   hydrated: boolean;
@@ -34,6 +46,7 @@ type SessionStore = {
   lock: () => Promise<void>;
   touchActivity: () => Promise<void>;
   applyPayload: (payload: VaultPayload, vault: PersistedVault) => void;
+  applyVault: (vault: PersistedVault) => void;
 };
 
 export const useSessionStore = create<SessionStore>((set, get) => ({
@@ -139,5 +152,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
   applyPayload: (payload, vault) => {
     set({ payload, vault });
+  },
+
+  applyVault: (vault) => {
+    set({ vault });
   },
 }));

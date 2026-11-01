@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Settings } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ const emptyDraft = (): Draft => ({
 
 export function HomeScreen() {
   const lock = useSessionStore((state) => state.lock);
+  const setScreen = useSessionStore((state) => state.setScreen);
   const payload = useSessionStore((state) => state.payload);
   const vault = useSessionStore((state) => state.vault);
   const dek = useSessionStore((state) => state.dek);
@@ -223,9 +225,20 @@ export function HomeScreen() {
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl font-semibold text-foreground">Stay Key</h1>
-        <Button variant="ghost" size="sm" onClick={() => void lock()}>
-          锁定
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="设置"
+            onClick={() => setScreen("settings")}
+          >
+            <Settings />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => void lock()}>
+            锁定
+          </Button>
+        </div>
       </div>
       <div className="flex gap-2">
         <Input

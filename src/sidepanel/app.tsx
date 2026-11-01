@@ -7,6 +7,11 @@ import { MasterPasswordScreen } from "./screens/master-password-screen";
 import { RecoverScreen } from "./screens/recover-screen";
 import { RecoveryQuestionScreen } from "./screens/recovery-question-screen";
 import { ResetMasterPasswordScreen } from "./screens/reset-master-password-screen";
+import { SettingsAboutScreen } from "./screens/settings-about-screen";
+import { SettingsGeneralScreen } from "./screens/settings-general-screen";
+import { SettingsHubScreen } from "./screens/settings-hub-screen";
+import { SettingsSecurityScreen } from "./screens/settings-security-screen";
+import { SettingsShortcutsScreen } from "./screens/settings-shortcuts-screen";
 import { UnlockScreen } from "./screens/unlock-screen";
 import { WelcomeScreen } from "./screens/welcome-screen";
 import { useIdleLock } from "./use-idle-lock";
@@ -39,6 +44,11 @@ export function SidePanel() {
       {screen === "recover" ? <RecoverScreen /> : null}
       {screen === "reset" ? <ResetMasterPasswordScreen /> : null}
       {screen === "home" ? <HomeScreen /> : null}
+      {screen === "settings" ? <SettingsHubScreen /> : null}
+      {screen === "settings-general" ? <SettingsGeneralScreen /> : null}
+      {screen === "settings-shortcuts" ? <SettingsShortcutsScreen /> : null}
+      {screen === "settings-security" ? <SettingsSecurityScreen /> : null}
+      {screen === "settings-about" ? <SettingsAboutScreen /> : null}
     </main>
   );
 }

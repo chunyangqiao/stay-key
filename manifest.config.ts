@@ -29,5 +29,14 @@ export default defineManifest({
     service_worker: "src/background/index.ts",
     type: "module",
   },
-  permissions: ["sidePanel", "storage", "alarms"],
+  permissions: ["sidePanel", "storage", "alarms", "tabs"],
+  commands: {
+    _execute_action: {
+      suggested_key: {
+        default: "Ctrl+Shift+Y",
+        mac: "Command+Shift+Y",
+      },
+      description: "打开 Stay Key",
+    },
+  },
 });

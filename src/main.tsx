@@ -12,7 +12,12 @@ const root = document.getElementById("root");
 if (root) {
   createRoot(root).render(
     <React.StrictMode>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        storageKey="stay-key.theme"
+      >
         <SidePanel />
         <Toaster />
       </ThemeProvider>

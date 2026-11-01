@@ -306,3 +306,21 @@ export async function saveVaultPayload(
   await writePersistedVault(next);
   return next;
 }
+
+export async function updateVaultSettings(
+  partial: Partial<import("./vault-types").VaultSettings>,
+): Promise<PersistedVault | undefined> {
+  const vault = await readPersistedVault();
+  if (!vault) {
+    return undefined;
+  }
+  const next: PersistedVault = {
+    ...vault,
+    settings: {
+      ...vault.settings,
+      ...partial,
+    },
+  };
+  await writePersistedVault(next);
+  return next;
+}
