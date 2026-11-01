@@ -7,7 +7,9 @@ import { isValidMasterPin } from "@/shared/constants";
 import { useSessionStore } from "@/shared/session-store";
 import { unlockWithMasterPassword } from "@/shared/vault";
 
+import { BrandHeader } from "../components/app-header";
 import { MasterPinOtp } from "../components/master-pin-otp";
+import { Screen, ScreenBody } from "../components/screen";
 
 function formatCooldown(until: number | undefined): string {
   if (!until) {
@@ -79,16 +81,15 @@ export function UnlockScreen() {
   }
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center">
-      <div className="flex w-full flex-col gap-3">
-        <img src="/icon128.png" alt="" width={40} height={40} className="mx-auto size-10" />
-        <h1 className="text-center text-xl font-semibold text-foreground">保险库已锁定</h1>
+    <Screen>
+      <BrandHeader />
+      <ScreenBody className="flex flex-col justify-center px-4 pt-6 pb-14">
+        <h2 className="text-center text-title font-semibold text-foreground">保险库已锁定</h2>
 
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="unlock-password" className="text-center">
-            主密码
-          </Label>
+        <div className="mt-7">
+          <Label htmlFor="unlock-password">主密码</Label>
           <MasterPinOtp
+            className="mt-2"
             id="unlock-password"
             value={password}
             onChange={(next) => {
@@ -107,13 +108,13 @@ export function UnlockScreen() {
               }
             }}
           />
-          <p className="text-center text-xs text-muted-foreground">请输入 6 位数字</p>
+          <p className="mt-2 min-h-5 text-micro text-muted-foreground">
+            {error ? <span className="text-destructive">{error}</span> : "请输入 6 位数字"}
+          </p>
         </div>
 
-        {error ? <p className="text-center text-xs text-destructive">{error}</p> : null}
-
         {coolingDown ? (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="mt-1">
             <AlertTitle>尝试次数过多</AlertTitle>
             <AlertDescription>
               请{formatCooldown(cooldownUntil)}后再试（不会清空保险库）。
@@ -121,14 +122,14 @@ export function UnlockScreen() {
           </Alert>
         ) : null}
 
-        <Button className="w-full" disabled={!canSubmit} onClick={() => void handleUnlock()}>
+        <Button className="mt-4 w-full" disabled={!canSubmit} onClick={() => void handleUnlock()}>
           {pending ? "解锁中…" : "解锁"}
         </Button>
 
-        <Button variant="link" className="w-full" onClick={() => setScreen("recover")}>
+        <Button variant="link" className="mt-2 w-full" onClick={() => setScreen("recover")}>
           忘记主密码？
         </Button>
-      </div>
-    </div>
+      </ScreenBody>
+    </Screen>
   );
 }

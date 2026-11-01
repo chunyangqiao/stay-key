@@ -1,14 +1,22 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: brand, DESIGN.md locked · redesign: full
+ * paper: #ffffff · accent: #1aabb8 · display: Geist Variable · body: Geist Variable
+ * nav: a 48px header carrying the wordmark or a back title over one hairline · signature: the joined six-cell lock track
+ * states: default, hover, focus, active, disabled, loading, error, empty · posture: restrained · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V3 · weakest: V, every screen was the same stack of bordered blocks; fixed by giving the lock its own instrument and the site its full-bleed band */
+/* Hallmark · finish-review: subagent · 5 findings, 5 resolved (lock ring on the track, one copy language, gated primary, system notes, flat shortcut row) · notes fixed: one brand mark per screen, the mixed "vault" lines, footer words */
+/* Hallmark · dismissed F18 · data-slot="button" and "label" are the project's shadcn hooks, not picture slots */
+/* Hallmark · dropped "onBack={setScreen}", "onClick={() => onBack(backTo)}", "onClick={closeEditor}", "onChange={(event) => setDraft(" · SettingsHeader became AppHeader and oxfmt split the draft handlers; the same back navigation and field updates are still wired */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is([data-theme="dark"] *));
 
 html,
 body,
 #root {
-  min-height: 100%;
+  height: 100%;
 }
 
 body {
@@ -42,6 +50,7 @@ body {
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-ink: var(--primary-ink);
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
@@ -49,6 +58,8 @@ body {
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
+  --color-band: var(--band);
+  --color-segment-thumb: var(--segment-thumb);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -56,6 +67,25 @@ body {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@theme {
+  --text-title: 1.375rem;
+  --text-title--line-height: 1.75rem;
+  --text-section: 1rem;
+  --text-section--line-height: 1.375rem;
+  --text-row: 0.9375rem;
+  --text-row--line-height: 1.375rem;
+  --text-lead: 0.9375rem;
+  --text-lead--line-height: 1.5rem;
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.25rem;
+  --text-micro: 0.75rem;
+  --text-micro--line-height: 1rem;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --container-app: 40rem;
 }
 
 :root {
@@ -67,16 +97,19 @@ body {
   --popover-foreground: #0a0a0a;
   --primary: #1aabb8;
   --primary-foreground: #171717;
+  /* Teal as text, darkened to clear 4.5:1 on the page. */
+  --primary-ink: #0b6f79;
   --secondary: #f5f5f5;
   --secondary-foreground: #171717;
   --muted: #f5f5f5;
-  --muted-foreground: #737373;
+  --muted-foreground: #6e6e6e;
   --accent: #f5f5f5;
   --accent-foreground: #171717;
   --destructive: #e7000b;
   --border: #e5e5e5;
-  --input: #e5e5e5;
-  --ring: #a1a1a1;
+  /* A field edge carries 3:1, a separator does not. */
+  --input: #8a8a8a;
+  --ring: #0e7683;
   --chart-1: #d4d4d4;
   --chart-2: #737373;
   --chart-3: #525252;
@@ -91,9 +124,14 @@ body {
   --sidebar-accent-foreground: #171717;
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #a1a1a1;
+  /* The current-site band, half a step below the page. */
+  --band: #f6f6f6;
+  --segment-thumb: #ffffff;
+  --dur-micro: 120ms;
+  --dur-short: 200ms;
 }
 
-.dark {
+:root[data-theme="dark"] {
   --background: #0a0a0a;
   --foreground: #fafafa;
   --card: #171717;
@@ -102,6 +140,7 @@ body {
   --popover-foreground: #fafafa;
   --primary: #28d2e5;
   --primary-foreground: #171717;
+  --primary-ink: #28d2e5;
   --secondary: #262626;
   --secondary-foreground: #fafafa;
   --muted: #262626;
@@ -110,8 +149,8 @@ body {
   --accent-foreground: #fafafa;
   --destructive: #ff6467;
   --border: #ffffff1a;
-  --input: #ffffff26;
-  --ring: #737373;
+  --input: #6f6f6f;
+  --ring: #28d2e5;
   --chart-1: #d4d4d4;
   --chart-2: #737373;
   --chart-3: #525252;
@@ -125,16 +164,43 @@ body {
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #ffffff1a;
   --sidebar-ring: #737373;
+  --band: #151515;
+  --segment-thumb: #3a3a3a;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    overflow-x: clip;
+    scrollbar-color: var(--muted-foreground) transparent;
+  }
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: clip;
+    caret-color: var(--primary);
+    -webkit-font-smoothing: antialiased;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 24%, var(--background));
+    color: var(--foreground);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

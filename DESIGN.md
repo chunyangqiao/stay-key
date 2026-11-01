@@ -17,6 +17,12 @@ colors:
   popover-foreground-dark: "#fafafa"
   primary: "#1aabb8"
   primary-dark: "#28d2e5"
+  primary-ink: "#0b6f79"
+  primary-ink-dark: "#28d2e5"
+  band: "#f6f6f6"
+  band-dark: "#151515"
+  segment-thumb: "#ffffff"
+  segment-thumb-dark: "#3a3a3a"
   primary-foreground: "#171717"
   primary-foreground-dark: "#171717"
   secondary: "#f5f5f5"
@@ -25,7 +31,7 @@ colors:
   secondary-foreground-dark: "#fafafa"
   muted: "#f5f5f5"
   muted-dark: "#262626"
-  muted-foreground: "#737373"
+  muted-foreground: "#6e6e6e"
   muted-foreground-dark: "#a1a1a1"
   accent: "#f5f5f5"
   accent-dark: "#262626"
@@ -35,10 +41,10 @@ colors:
   destructive-dark: "#ff6467"
   border: "#e5e5e5"
   border-dark: "#ffffff1a"
-  input: "#e5e5e5"
-  input-dark: "#ffffff26"
-  ring: "#a1a1a1"
-  ring-dark: "#737373"
+  input: "#8a8a8a"
+  input-dark: "#6f6f6f"
+  ring: "#0e7683"
+  ring-dark: "#28d2e5"
   chart-1: "#d4d4d4"
   chart-1-dark: "#d4d4d4"
   chart-2: "#737373"
@@ -221,7 +227,7 @@ components:
 
 Stay Key 给同一个人用：在这台电脑上保存账号、密码和其他机密，并在需要时生成随机密码。界面是浏览器扩展的侧栏，一次只处理一条记录或一个操作。
 
-性格安静、中性、密度偏紧。表面和文字用中性灰，青绿色只留给主要操作。圆角小，控件高 2rem，侧栏内边距 1rem。深色值挂在 `.dark` 上；侧栏页面现在没有主题切换。
+性格安静、中性、密度偏紧。表面和文字用中性灰，青绿色只留给主要操作。圆角小，控件高 2rem，侧栏内边距 1rem。深色值挂在 `html[data-theme="dark"]` 上；设置里可以切浅色、深色、跟随系统。
 
 ## Colors
 
@@ -233,18 +239,18 @@ Stay Key 给同一个人用：在这台电脑上保存账号、密码和其他�
 - **card-foreground** (#0a0a0a): 卡片上的文字。
 - **popover** (#ffffff): 下拉菜单和选择浮层。
 - **popover-foreground** (#0a0a0a): 浮层上的文字。
-- **primary** (#1aabb8): 主要操作、选中的复选框和开关。浅色下与 primary-foreground 约 6.46:1。
+- **primary** (#1aabb8): 主要操作、选中的复选框和开关。浅色下与 primary-foreground 约 6.46:1。**primary-ink** (#0b6f79) 是同一支青绿作文字时的颜色，白底约 5.4:1；primary 本身不足 4.5:1，不用来写字。
 - **primary-foreground** (#171717): primary 表面上的文字和图标。深色 primary 上约 9.77:1。primary 降到 80% 后，叠在白色上约 7.93:1，叠在深色页面上约 6.42:1。
 - **secondary** (#f5f5f5): 次要按钮和安静的表面。
 - **secondary-foreground** (#171717): 次要表面上的文字。在 secondary 上约 16.44:1。
 - **muted** (#f5f5f5): 标签页轨道和卡片页脚这类安静区域。
-- **muted-foreground** (#737373): 次要文字和占位符。在 background 上约 4.74:1。在 muted 上约 4.35:1，低于正文 4.5:1，所以不把这段文字放在 muted 底上。
+- **muted-foreground** (#6e6e6e): 次要文字和占位符。在 background 上约 5.10:1，在 muted 上约 4.80:1。旧值 #737373 在 muted 上只有约 4.35:1，所以当时的规范不许把它放在 muted 底上；现在说明块可以用了。
 - **accent** (#f5f5f5): 菜单和列表行的悬停、选中。
 - **accent-foreground** (#171717): accent 行上的文字。
 - **destructive** (#e7000b): 删除和校验错误，必须同时有文字或图标。实色在 background 上约 4.77:1。按钮用的 10% 底约 4.01:1，悬停 20% 底约 3.31:1，都低于正文 4.5:1。
 - **border** (#e5e5e5): 区域之间的分隔。在 background 上约 1.26:1，只作边界，不当文字。
-- **input** (#e5e5e5): 输入框、选择框和复选框的边线。浅色下与 border 同色。
-- **ring** (#a1a1a1): 焦点环的颜色。实色在 background 上约 2.58:1。组件再把它画成 3px、50% 透明度，可见的环更淡。这里不把这套焦点样式写成已经达到 3:1。
+- **input** (#8a8a8a): 输入框、选择框和复选框的边线。字段边线要 3:1，在 background 上约 3.45:1。旧值 #e5e5e5 约 1.26:1，只够当分隔线。
+- **ring** (#0e7683): 焦点环的颜色，青绿压深一档。在 background 上约 5.4:1，环是实色 2px，不再叠透明度。
 - **chart-1** (#d4d4d4): 图表系列里最浅的一档。在 background 上约 1.48:1，不能单独当系列标记。
 - **chart-2** (#737373): 图表系列的第二档。
 - **chart-3** (#525252): 图表系列的第三档。
@@ -259,7 +265,7 @@ Stay Key 给同一个人用：在这台电脑上保存账号、密码和其他�
 - **sidebar-border** (#e5e5e5): 预留侧栏分区的分隔线。
 - **sidebar-ring** (#a1a1a1): 预留侧栏分区的焦点色。
 
-名称以 `-dark` 结尾的是同一角色在 `.dark` 下的颜色。深色页面是 #0a0a0a，卡片和浮层是 #171717，次级表面是 #262626。primary 改为 #28d2e5，destructive 改为 #ff6467。border 是 #ffffff1a，也就是 10% 白；input 是 #ffffff26，也就是 15% 白。图表五档在两种模式下相同。深色 destructive 在深色页面上约 6.85:1；按钮静止态用 20% 底，约 5.31:1，悬停 30% 底约 4.35:1。深色 muted-foreground 在深色页面上约 7.66:1，在深色 muted 上约 5.86:1。
+名称以 `-dark` 结尾的是同一角色在 `html[data-theme="dark"]` 下的颜色。深色页面是 #0a0a0a，卡片和浮层是 #171717，次级表面是 #262626。primary 改为 #28d2e5，destructive 改为 #ff6467。border 是 #ffffff1a，也就是 10% 白；input 是 #6f6f6f，压在 #0a0a0a 上约 3.9:1。图表五档在两种模式下相同。深色 destructive 在深色页面上约 6.85:1；按钮静止态用 20% 底，约 5.31:1，悬停 30% 底约 4.35:1。深色 muted-foreground 在深色页面上约 7.66:1，在深色 muted 上约 5.86:1。
 
 ## Typography
 
@@ -314,10 +320,21 @@ Stay Key 给同一个人用：在这台电脑上保存账号、密码和其他�
 - 表面、正文和分隔用中性灰。品牌色只保留 primary 这一支青绿色。
 - 主题色写 HEX。深色边框和输入框边线保留八位 HEX，不要改回 OKLCH。
 - destructive 必须配文字或图标。不要只靠红色表示删除或错误。
-- 不要把 muted-foreground 放在 muted 底上当正文。浅色这对约 4.35:1。
+- 说明块上的次要文字用 muted-foreground，浅色这对现在约 4.80:1。
 - 不要把 destructive 的 10% 或 20% 浅色底当成已经达到正文对比。它们约 4.01:1 和 3.31:1。
 - 成功和警告继续用图标和文案。出现需要上色的状态之前，不要新增 success 或 warning。
 - 图表灰阶不随主题变化。不要把 chart 色当正文，也不要只靠这五档区分系列。
 - 圆角走 rounded 刻度。复选框的 4px 不要推广到按钮和输入框。
-- 深色值只在祖先有 `.dark` 时生效。侧栏现在没有主题切换。
+- 深色值只在 `html[data-theme="dark"]` 时生效。设置里可以切浅色、深色、跟随系统。
 - 这些约束还待产品确认。
+
+## 2026-11 的实现说明
+
+这一版界面按上面的规范重做时，下面几处是为对比度或主题块能读到而改的，代码和这张表已经同步：
+
+- **input / ring / muted-foreground / primary-ink** 的值按 Colors 一节更新；改回去会重新跌破 3:1 或 4.5:1。
+- **band** (#f6f6f6)：当前站点条的底，比页面低半档，不用卡片和阴影。
+- **segment-thumb**：分段控件的选中块，浅色白、深色 #3a3a3a，用表面明度区分，不用阴影堆叠。
+- 深色主题的选择器从 `.dark` 改为 `:root[data-theme="dark"]`，`ThemeProvider` 的 `attribute` 改为 `data-theme`；样式里不再有 `.dark` 类。
+- 按钮所有尺寸沿用 lg 圆角；输入框保持 2rem 高，字号用 body-md 的 1rem。
+- 焦点环是实色 2px、不渐入；输入框用内嵌 ring，圆角容器（六位密码条）只在整条外面画一圈。

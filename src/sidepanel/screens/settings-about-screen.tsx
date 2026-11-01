@@ -1,12 +1,14 @@
 import * as React from "react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ChevronDown } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { openExternalUrl } from "@/shared/open-chrome-page";
 import { GITHUB_ISSUES_URL } from "@/shared/settings-options";
 import { useSessionStore } from "@/shared/session-store";
 
-import { SettingsHeader } from "./settings-shell";
+import { AppHeader } from "../components/app-header";
+import { Screen, ScreenBody } from "../components/screen";
 
 const VERSION = chrome.runtime.getManifest().version;
 
@@ -15,49 +17,60 @@ export function SettingsAboutScreen() {
   const [showRisk, setShowRisk] = React.useState(false);
 
   return (
-    <div className="flex flex-col gap-3">
-      <SettingsHeader title="关于" backTo="settings" onBack={setScreen} />
-      <div className="flex flex-col items-center gap-1.5 pt-1">
-        <img src="/icon48.png" alt="" width={48} height={48} className="rounded-full" />
-        <h2 className="text-base font-semibold text-foreground">Stay Key</h2>
-        <p className="text-center text-xs text-muted-foreground">
-          本机密文保管站点账号与密码。凭证仅保存在本机。
-        </p>
-      </div>
-      <div className="rounded-xl border border-border bg-card px-3 py-2.5">
-        <p className="text-xs text-muted-foreground">版本</p>
-        <p className="text-sm font-medium text-foreground">v{VERSION}</p>
-      </div>
-      <Button
-        type="button"
-        variant="link"
-        className="h-auto justify-start px-0 text-sm"
-        onClick={() => setShowRisk((v) => !v)}
-      >
-        关于提示问题与第二把钥匙
-      </Button>
-      {showRisk ? (
-        <Alert>
-          <AlertTitle>请注意：提示问题答案是第二把钥匙</AlertTitle>
-          <AlertDescription>
-            答对即可解锁保险库。攻击者若猜到或获知该答案，即可打开
-            vault。请使用足够长、难以猜测的答案，并勿与公开信息相同。
-          </AlertDescription>
-        </Alert>
-      ) : null}
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full"
-        disabled={!GITHUB_ISSUES_URL}
-        onClick={() => {
-          if (GITHUB_ISSUES_URL) {
-            void openExternalUrl(GITHUB_ISSUES_URL);
-          }
-        }}
-      >
-        反馈问题（GitHub Issues）
-      </Button>
-    </div>
+    <Screen>
+      <AppHeader title="关于" onBack={() => setScreen("settings")} />
+      <ScreenBody className="px-4 py-7">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <img src="/icon48.png" alt="" width={48} height={48} className="size-12 rounded-full" />
+          <h2 className="text-section font-semibold text-foreground">Stay Key</h2>
+          <p className="max-w-[24rem] text-meta leading-5 text-muted-foreground">
+            本机密文保管站点账号与密码。凭证仅保存在本机。
+          </p>
+        </div>
+
+        <div className="mt-7 flex items-center justify-between gap-3 border-y border-border py-2.5">
+          <span className="text-micro text-muted-foreground">版本</span>
+          <span className="text-meta font-medium tabular-nums text-foreground">v{VERSION}</span>
+        </div>
+
+        <button
+          type="button"
+          aria-expanded={showRisk}
+          className="mt-4 flex w-full items-center justify-between gap-2 py-1.5 text-left text-meta font-medium text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          onClick={() => setShowRisk((v) => !v)}
+        >
+          关于提示问题与第二把钥匙
+          <ChevronDown
+            aria-hidden
+            className="size-4 shrink-0 text-muted-foreground transition-transform duration-[var(--dur-short)] ease-[var(--ease-out)] data-[open=true]:rotate-180"
+            data-open={showRisk}
+          />
+        </button>
+        {showRisk ? (
+          <div className="mt-2 rounded-xl bg-secondary px-3 py-2.5">
+            <p className="text-meta font-medium text-secondary-foreground">
+              请注意：提示问题答案是第二把钥匙
+            </p>
+            <p className="mt-1 text-meta leading-5 text-muted-foreground">
+              答对即可解锁保险库。攻击者若猜到或获知该答案，即可打开保险库。请使用足够长、难以猜测的答案，并勿与公开信息相同。
+            </p>
+          </div>
+        ) : null}
+
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-7 w-full"
+          disabled={!GITHUB_ISSUES_URL}
+          onClick={() => {
+            if (GITHUB_ISSUES_URL) {
+              void openExternalUrl(GITHUB_ISSUES_URL);
+            }
+          }}
+        >
+          反馈问题（GitHub Issues）
+        </Button>
+      </ScreenBody>
+    </Screen>
   );
 }

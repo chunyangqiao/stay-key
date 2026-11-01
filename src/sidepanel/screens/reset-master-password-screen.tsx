@@ -8,7 +8,9 @@ import { getErrorMessage } from "@/shared/error-message";
 import { useSessionStore } from "@/shared/session-store";
 import { resetMasterPassword } from "@/shared/vault";
 
+import { BrandHeader } from "../components/app-header";
 import { MasterPinOtp } from "../components/master-pin-otp";
+import { Screen, ScreenBody } from "../components/screen";
 
 export function ResetMasterPasswordScreen() {
   const dek = useSessionStore((state) => state.dek);
@@ -55,39 +57,45 @@ export function ResetMasterPasswordScreen() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <h1 className="text-xl font-semibold text-foreground">设置新的主密码</h1>
-      <p className="text-sm text-muted-foreground">验证通过。请设置新的 6 位数字主密码。</p>
+    <Screen>
+      <BrandHeader />
+      <ScreenBody className="px-4 pt-7 pb-8">
+        <h2 className="text-title font-semibold text-foreground">设置新的主密码</h2>
+        <p className="mt-2 text-sm leading-5 text-muted-foreground">
+          验证通过。请设置新的 6 位数字主密码。
+        </p>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="reset-master-password">新主密码</Label>
-        <MasterPinOtp
-          id="reset-master-password"
-          value={password}
-          onChange={(next) => {
-            setPassword(next);
-            if (error) {
-              setError(undefined);
-            }
-          }}
-          disabled={pending}
-          invalid={Boolean(error)}
-          aria-label="新主密码"
-          autoFocus
-          onEnterSubmit={() => {
-            if (canSubmit) {
-              void handleSave();
-            }
-          }}
-        />
-        <p className="text-xs text-muted-foreground">请输入 6 位数字</p>
-      </div>
+        <div className="mt-7">
+          <Label htmlFor="reset-master-password">新主密码</Label>
+          <MasterPinOtp
+            className="mt-2"
+            id="reset-master-password"
+            value={password}
+            onChange={(next) => {
+              setPassword(next);
+              if (error) {
+                setError(undefined);
+              }
+            }}
+            disabled={pending}
+            invalid={Boolean(error)}
+            aria-label="新主密码"
+            autoFocus
+            onEnterSubmit={() => {
+              if (canSubmit) {
+                void handleSave();
+              }
+            }}
+          />
+          <p className="mt-2 min-h-5 text-micro text-muted-foreground">
+            {error ? <span className="text-destructive">{error}</span> : "请输入 6 位数字"}
+          </p>
+        </div>
 
-      {error ? <p className="text-xs text-destructive">{error}</p> : null}
-
-      <Button className="w-full" disabled={!canSubmit} onClick={() => void handleSave()}>
-        {pending ? "保存中…" : "保存并继续"}
-      </Button>
-    </div>
+        <Button className="mt-4 w-full" disabled={pending} onClick={() => void handleSave()}>
+          {pending ? "保存中…" : "保存并继续"}
+        </Button>
+      </ScreenBody>
+    </Screen>
   );
 }

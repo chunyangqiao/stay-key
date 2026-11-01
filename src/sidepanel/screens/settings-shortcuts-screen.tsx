@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { openChromeShortcutsPage, readActionShortcut } from "@/shared/open-chrome-page";
 import { useSessionStore } from "@/shared/session-store";
 
-import { SettingsHeader, SettingsSectionLabel } from "./settings-shell";
+import { AppHeader } from "../components/app-header";
+import { Screen, ScreenBody, SectionLabel } from "../components/screen";
 
 export function SettingsShortcutsScreen() {
   const setScreen = useSessionStore((state) => state.setScreen);
@@ -27,28 +28,28 @@ export function SettingsShortcutsScreen() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <SettingsHeader title="快捷操作" backTo="settings" onBack={setScreen} />
-      <div className="flex flex-col gap-1.5">
-        <SettingsSectionLabel>打开 Side Panel</SettingsSectionLabel>
-        <div className="rounded-xl border border-border bg-card px-3 py-2.5">
-          <p className="text-xs text-muted-foreground">当前快捷键</p>
-          <p className="mt-0.5 font-mono text-sm tabular-nums text-foreground">
+    <Screen>
+      <AppHeader title="快捷操作" onBack={() => setScreen("settings")} />
+      <ScreenBody className="px-4 py-5">
+        <SectionLabel>打开 Side Panel</SectionLabel>
+        <div className="mt-2 flex items-center justify-between gap-3 border-y border-border py-2.5">
+          <span className="text-micro text-muted-foreground">当前快捷键</span>
+          <kbd className="rounded-md border border-border bg-secondary px-2 py-0.5 font-mono text-micro font-medium tabular-nums text-foreground">
             {!loaded ? "读取中…" : shortcut ? shortcut : "未设置"}
-          </p>
+          </kbd>
         </div>
         <Button
           type="button"
           variant="outline"
-          className="w-full"
+          className="mt-3 w-full"
           onClick={() => void onChangeInChrome()}
         >
           在 Chrome 中更改
         </Button>
-        <p className="text-xs text-muted-foreground">
+        <p className="mt-2 text-micro leading-4 text-muted-foreground">
           在浏览器扩展快捷键页修改；面板内不录制全局快捷键。
         </p>
-      </div>
-    </div>
+      </ScreenBody>
+    </Screen>
   );
 }

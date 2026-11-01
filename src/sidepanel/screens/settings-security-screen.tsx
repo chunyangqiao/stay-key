@@ -5,17 +5,13 @@ import { CLIPBOARD_CLEAR_OPTIONS_MS, IDLE_LOCK_OPTIONS_MS } from "@/shared/setti
 import { useSessionStore } from "@/shared/session-store";
 import { updateVaultSettings } from "@/shared/vault";
 
-import {
-  SettingsHeader,
-  SettingsOptionList,
-  SettingsSectionLabel,
-  SettingsSegmented,
-} from "./settings-shell";
+import { AppHeader } from "../components/app-header";
+import { Screen, ScreenBody, SectionLabel } from "../components/screen";
+import { SettingsOptionList, SettingsSegmented } from "./settings-shell";
 
 const CLIPBOARD_SEGMENTED = CLIPBOARD_CLEAR_OPTIONS_MS.map((option) => ({
   value: option.value,
-  // Canvas / Edward: full-width Segmented labels are 15 / 30 / 60
-  label: String(Math.round(option.value / 1000)),
+  label: `${Math.round(option.value / 1000)} 秒`,
 }));
 
 export function SettingsSecurityScreen() {
@@ -44,32 +40,32 @@ export function SettingsSecurityScreen() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <SettingsHeader title="安全" backTo="settings" onBack={setScreen} />
-      <div className="flex flex-col gap-1.5">
-        <SettingsSectionLabel>空闲自动锁定</SettingsSectionLabel>
-        <p className="text-xs text-muted-foreground">
+    <Screen>
+      <AppHeader title="安全" onBack={() => setScreen("settings")} />
+      <ScreenBody className="px-4 py-5">
+        <SectionLabel>空闲自动锁定</SectionLabel>
+        <p className="mt-1 text-meta text-muted-foreground">
           离开一段时间后自动锁定保险库。收起面板时计时继续。
         </p>
         <SettingsOptionList
+          className="mt-3"
           name="空闲自动锁定"
           options={IDLE_LOCK_OPTIONS_MS}
           value={idleLockMs}
           onChange={(next) => void patch({ idleLockMs: next })}
         />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <SettingsSectionLabel>剪贴板自动清除</SettingsSectionLabel>
-        <p className="text-xs text-muted-foreground">
+        <SectionLabel className="mt-6">剪贴板自动清除</SectionLabel>
+        <p className="mt-1 text-meta text-muted-foreground">
           复制账号或密码后，短时清空剪贴板中的敏感内容。
         </p>
         <SettingsSegmented
+          className="mt-3"
           name="剪贴板自动清除"
           options={CLIPBOARD_SEGMENTED}
           value={clipboardClearMs}
           onChange={(next) => void patch({ clipboardClearMs: next })}
         />
-      </div>
-    </div>
+      </ScreenBody>
+    </Screen>
   );
 }

@@ -33,6 +33,9 @@ pnpm-debug.log*
 # Test
 coverage/
 
+# Hallmark working files: before/after captures, the build log
+.hallmark/
+
 # OS
 .DS_Store
 Thumbs.db

@@ -1,7 +1,6 @@
 import * as React from "react";
 import { toast } from "sonner";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -16,6 +15,9 @@ import {
 } from "@/shared/onboarding-draft";
 import { useSessionStore } from "@/shared/session-store";
 import { createVault } from "@/shared/vault";
+
+import { BrandHeader } from "../components/app-header";
+import { Screen, ScreenBody } from "../components/screen";
 
 export function RecoveryQuestionScreen() {
   const setUnlockedSession = useSessionStore((state) => state.setUnlockedSession);
@@ -71,75 +73,87 @@ export function RecoveryQuestionScreen() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <h1 className="text-xl font-semibold text-foreground">设置安全提示问题</h1>
-      <p className="text-sm text-muted-foreground">
-        忘记主密码时，答对即可找回访问权限。请自己编写问题与答案。
-      </p>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="recovery-question">安全提示问题（请自己编写）</Label>
-        <Textarea
-          id="recovery-question"
-          value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          rows={2}
-        />
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="recovery-answer">答案</Label>
-        <Input
-          id="recovery-answer"
-          type="password"
-          autoComplete="off"
-          value={answer}
-          onChange={(event) => setAnswer(event.target.value)}
-          aria-invalid={answerTooShort || undefined}
-        />
-        <p className="text-xs text-muted-foreground">
-          答案请当作第二密码保管；过短或常见词会显著降低安全性。
+    <Screen>
+      <BrandHeader />
+      <ScreenBody className="px-4 pt-7 pb-10">
+        <h2 className="text-title font-semibold text-foreground">设置安全提示问题</h2>
+        <p className="mt-2 text-sm leading-5 text-muted-foreground">
+          忘记主密码时，答对即可找回访问权限。请自己编写问题与答案。
         </p>
-        {answerTooShort ? (
-          <p className="text-xs text-destructive">答案长度不足，请加长后再试。</p>
-        ) : null}
-      </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="recovery-answer-confirm">确认答案</Label>
-        <Input
-          id="recovery-answer-confirm"
-          type="password"
-          autoComplete="off"
-          value={confirm}
-          onChange={(event) => setConfirm(event.target.value)}
-          aria-invalid={mismatch || undefined}
-        />
-        {mismatch ? <p className="text-xs text-destructive">两次输入的答案不一致。</p> : null}
-      </div>
+        <div className="mt-7 flex flex-col gap-5">
+          <div>
+            <Label htmlFor="recovery-question">安全提示问题（请自己编写）</Label>
+            <Textarea
+              className="mt-2"
+              id="recovery-question"
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              rows={2}
+            />
+          </div>
 
-      <Alert>
-        <AlertTitle>请注意：提示问题答案是第二把钥匙</AlertTitle>
-        <AlertDescription>
-          答对即可解锁保险库。攻击者若猜到或获知该答案，即可打开
-          vault。请使用足够长、难以猜测的答案，并勿与公开信息相同。
-        </AlertDescription>
-      </Alert>
+          <div>
+            <Label htmlFor="recovery-answer">答案</Label>
+            <Input
+              className="mt-2"
+              id="recovery-answer"
+              type="password"
+              autoComplete="off"
+              value={answer}
+              onChange={(event) => setAnswer(event.target.value)}
+              aria-invalid={answerTooShort || undefined}
+            />
+            <p className="mt-2 min-h-4 text-micro leading-4 text-muted-foreground">
+              {answerTooShort ? (
+                <span className="text-destructive">答案长度不足，请加长后再试。</span>
+              ) : (
+                "答案请当作第二密码保管；过短或常见词会显著降低安全性。"
+              )}
+            </p>
+          </div>
 
-      <label className="flex items-start gap-2 text-sm text-foreground">
-        <Checkbox
-          checked={acceptedRisk}
-          onCheckedChange={(checked) => setAcceptedRisk(checked === true)}
-          className="mt-0.5"
-        />
-        <span>我已了解上述风险，并将妥善保管答案</span>
-      </label>
+          <div>
+            <Label htmlFor="recovery-answer-confirm">确认答案</Label>
+            <Input
+              className="mt-2"
+              id="recovery-answer-confirm"
+              type="password"
+              autoComplete="off"
+              value={confirm}
+              onChange={(event) => setConfirm(event.target.value)}
+              aria-invalid={mismatch || undefined}
+            />
+            <p className="mt-2 min-h-4 text-micro leading-4 text-destructive">
+              {mismatch ? "两次输入的答案不一致。" : ""}
+            </p>
+          </div>
+        </div>
 
-      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+        <div className="mt-5 rounded-xl bg-secondary px-3 py-2.5">
+          <p className="text-meta font-medium text-secondary-foreground">
+            请注意：提示问题答案是第二把钥匙
+          </p>
+          <p className="mt-1 text-micro leading-4 text-muted-foreground">
+            答对即可解锁保险库。攻击者若猜到或获知该答案，即可打开保险库。请使用足够长、难以猜测的答案，并勿与公开信息相同。
+          </p>
+        </div>
 
-      <Button className="w-full" disabled={!canSubmit} onClick={() => void handleComplete()}>
-        {pending ? "创建中…" : "完成设置"}
-      </Button>
-    </div>
+        <label className="mt-4 flex cursor-pointer items-start gap-2.5 text-meta leading-5 text-foreground">
+          <Checkbox
+            checked={acceptedRisk}
+            onCheckedChange={(checked) => setAcceptedRisk(checked === true)}
+            className="mt-0.5"
+          />
+          <span>我已了解上述风险，并将妥善保管答案</span>
+        </label>
+
+        {error ? <p className="mt-3 text-micro text-destructive">{error}</p> : null}
+
+        <Button className="mt-4 w-full" disabled={!canSubmit} onClick={() => void handleComplete()}>
+          {pending ? "创建中…" : "完成设置"}
+        </Button>
+      </ScreenBody>
+    </Screen>
   );
 }

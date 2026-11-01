@@ -1,39 +1,6 @@
-import type { ReactNode } from "react";
-import { ArrowLeft, ChevronRight, type LucideIcon } from "lucide-react";
+import { ChevronRight, type LucideIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-
-import type { AppScreen } from "@/shared/session-store";
-
-export function SettingsHeader({
-  title,
-  backTo,
-  onBack,
-}: {
-  title: string;
-  backTo: AppScreen;
-  onBack: (screen: AppScreen) => void;
-}) {
-  return (
-    <div className="flex items-center gap-2 border-b border-border pb-2">
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="size-8"
-        aria-label="返回"
-        onClick={() => onBack(backTo)}
-      >
-        <ArrowLeft />
-      </Button>
-      <h1 className="text-lg font-semibold text-foreground">{title}</h1>
-    </div>
-  );
-}
-
-export function SettingsSectionLabel({ children }: { children: ReactNode }) {
-  return <p className="text-xs font-medium tracking-wide text-muted-foreground">{children}</p>;
-}
+import { cn } from "@/lib/utils";
 
 export function SettingsNavCard({
   items,
@@ -46,28 +13,27 @@ export function SettingsNavCard({
   }[];
 }) {
   return (
-    <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+    <ul className="divide-y divide-border/70">
       {items.map((item) => {
         const Icon = item.icon;
         return (
-          <button
-            key={item.title}
-            type="button"
-            onClick={item.onClick}
-            className="flex min-h-11 w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent"
-          >
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-              <Icon className="size-4" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-medium text-foreground">{item.title}</span>
-              <span className="block text-xs text-muted-foreground">{item.description}</span>
-            </span>
-            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-          </button>
+          <li key={item.title}>
+            <button
+              type="button"
+              onClick={item.onClick}
+              className="flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-foreground/[0.03] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+            >
+              <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="text-row font-medium text-foreground">{item.title}</span>
+                <span className="text-meta text-muted-foreground">{item.description}</span>
+              </span>
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            </button>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }
 
@@ -76,19 +42,21 @@ export function SettingsOptionList<T extends string | number>({
   value,
   onChange,
   name,
+  className,
 }: {
   options: readonly { value: T; label: string }[];
   value: T;
   onChange: (next: T) => void;
   name: string;
+  className?: string;
 }) {
   return (
     <div
-      className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card"
+      className={cn("overflow-hidden rounded-xl border border-border bg-background", className)}
       role="radiogroup"
       aria-label={name}
     >
-      {options.map((option) => {
+      {options.map((option, index) => {
         const selected = option.value === value;
         return (
           <button
@@ -97,21 +65,30 @@ export function SettingsOptionList<T extends string | number>({
             role="radio"
             aria-checked={selected}
             onClick={() => onChange(option.value)}
-            className={`flex w-full items-center gap-2.5 border-0 px-3 py-2 text-left outline-none ${
-              selected
-                ? "bg-[color-mix(in_oklab,var(--primary)_10%,transparent)]"
-                : "bg-transparent hover:bg-accent"
-            }`}
+            className={cn(
+              "flex h-10 w-full items-center gap-3 px-3 text-left transition-colors",
+              index > 0 && "border-t border-border",
+              selected ? "bg-secondary/70" : "hover:bg-foreground/[0.03]",
+              "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
+            )}
           >
             <span
               aria-hidden
-              className={`size-3.5 shrink-0 rounded-full border-2 ${
-                selected
-                  ? "border-primary bg-primary shadow-[inset_0_0_0_3px_var(--card)]"
-                  : "border-border bg-transparent"
-              }`}
-            />
-            <span className="text-sm font-medium text-foreground">{option.label}</span>
+              className={cn(
+                "grid size-4 shrink-0 place-items-center rounded-full border transition-colors",
+                selected ? "border-primary" : "border-input",
+              )}
+            >
+              {selected ? <span className="size-2 rounded-full bg-primary" /> : null}
+            </span>
+            <span
+              className={cn(
+                "text-sm",
+                selected ? "font-medium text-foreground" : "text-foreground/90",
+              )}
+            >
+              {option.label}
+            </span>
           </button>
         );
       })}
@@ -124,15 +101,17 @@ export function SettingsSegmented<T extends string | number>({
   value,
   onChange,
   name,
+  className,
 }: {
   options: readonly { value: T; label: string }[];
   value: T;
   onChange: (next: T) => void;
   name: string;
+  className?: string;
 }) {
   return (
     <div
-      className="grid w-full grid-cols-3 divide-x divide-border overflow-hidden rounded-xl border border-border bg-card"
+      className={cn("grid grid-cols-3 gap-0.5 rounded-lg bg-secondary p-0.5", className)}
       role="radiogroup"
       aria-label={name}
     >
@@ -145,11 +124,13 @@ export function SettingsSegmented<T extends string | number>({
             role="radio"
             aria-checked={selected}
             onClick={() => onChange(option.value)}
-            className={`border-0 px-2 py-2 text-center text-sm font-medium outline-none ${
+            className={cn(
+              "h-8 rounded-md text-xs font-medium transition-colors",
               selected
-                ? "bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] text-foreground"
-                : "bg-transparent text-muted-foreground hover:bg-accent"
-            }`}
+                ? "bg-segment-thumb text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+              "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
+            )}
           >
             {option.label}
           </button>

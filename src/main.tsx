@@ -13,7 +13,7 @@ if (root) {
   createRoot(root).render(
     <React.StrictMode>
       <ThemeProvider
-        attribute="class"
+        attribute="data-theme"
         defaultTheme="system"
         enableSystem
         storageKey="stay-key.theme"

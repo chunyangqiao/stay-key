@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Settings } from "lucide-react";
+import { Copy, KeyRound, Pencil, Search, Settings } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { readActiveTabHost, readActiveTabInfo, type ActiveTabInfo } from "@/shared/active-tab";
 import { copySecret } from "@/shared/clipboard";
-import { DEFAULT_CLIPBOARD_CLEAR_MS } from "@/shared/constants";
+import { DEFAULT_CLIPBOARD_CLEAR_MS, DEFAULT_IDLE_LOCK_MS } from "@/shared/constants";
 import { createEntryId, parseTags, searchEntries } from "@/shared/entries";
 import { filterEntriesForHost } from "@/shared/host-match";
 import { maskAccount } from "@/shared/mask";
 import { useSessionStore } from "@/shared/session-store";
 import { saveVaultPayload } from "@/shared/vault";
+
+import { BrandHeader, AppHeader } from "../components/app-header";
+import { Screen, ScreenBody, ScreenFooter } from "../components/screen";
 
 import type { VaultEntry } from "@/shared/vault-types";
 
@@ -83,6 +86,7 @@ export function HomeScreen() {
   );
   const visible = React.useMemo(() => searchEntries(entries, query), [entries, query]);
   const clipboardClearMs = vault?.settings.clipboardClearMs ?? DEFAULT_CLIPBOARD_CLEAR_MS;
+  const idleLockMinutes = Math.round((vault?.settings.idleLockMs ?? DEFAULT_IDLE_LOCK_MS) / 60_000);
 
   const openCreate = (prefillHost?: string) => {
     setDraft({ ...emptyDraft(), host: prefillHost ?? "" });
@@ -196,208 +200,256 @@ export function HomeScreen() {
 
   if (editor.kind !== "closed") {
     return (
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-2 border-b border-border pb-2">
-          <h1 className="text-lg font-semibold text-foreground">
-            {editor.kind === "edit" ? "编辑条目" : "新建条目"}
-          </h1>
-          <Button variant="ghost" size="sm" type="button" onClick={closeEditor}>
-            返回
-          </Button>
-        </div>
-        <form className="flex flex-col gap-3" onSubmit={(event) => void onSave(event)}>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="entry-host">站点 / 主机</Label>
-            <Input
-              id="entry-host"
-              value={draft.host}
-              onChange={(event) => setDraft((prev) => ({ ...prev, host: event.target.value }))}
-              placeholder="example.com"
-              autoComplete="off"
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="entry-username">账号</Label>
-            <Input
-              id="entry-username"
-              value={draft.username}
-              onChange={(event) => setDraft((prev) => ({ ...prev, username: event.target.value }))}
-              autoComplete="username"
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="entry-password">密码</Label>
-            <Input
-              id="entry-password"
-              type="password"
-              value={draft.password}
-              onChange={(event) => setDraft((prev) => ({ ...prev, password: event.target.value }))}
-              autoComplete="new-password"
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="entry-tags">标签（可选）</Label>
-            <Input
-              id="entry-tags"
-              value={draft.tags}
-              onChange={(event) => setDraft((prev) => ({ ...prev, tags: event.target.value }))}
-              placeholder="工作, 邮箱"
-              autoComplete="off"
-            />
-          </div>
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-          <Button type="submit" disabled={saving}>
-            {saving ? "保存中…" : "保存"}
-          </Button>
+      <Screen>
+        <AppHeader title={editor.kind === "edit" ? "编辑条目" : "新建条目"} onBack={closeEditor} />
+        <ScreenBody className="px-4 pt-5 pb-10">
+          <form className="flex flex-col gap-4" onSubmit={(event) => void onSave(event)}>
+            <div>
+              <Label htmlFor="entry-host">站点 / 主机</Label>
+              <Input
+                className="mt-1.5"
+                id="entry-host"
+                value={draft.host}
+                onChange={(event) => setDraft((prev) => ({ ...prev, host: event.target.value }))}
+                placeholder="example.com"
+                autoComplete="off"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="entry-username">账号</Label>
+              <Input
+                className="mt-1.5"
+                id="entry-username"
+                value={draft.username}
+                onChange={(event) =>
+                  setDraft((prev) => ({ ...prev, username: event.target.value }))
+                }
+                autoComplete="username"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="entry-password">密码</Label>
+              <Input
+                className="mt-1.5"
+                id="entry-password"
+                type="password"
+                value={draft.password}
+                onChange={(event) =>
+                  setDraft((prev) => ({ ...prev, password: event.target.value }))
+                }
+                autoComplete="new-password"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="entry-tags">标签（可选）</Label>
+              <Input
+                className="mt-1.5"
+                id="entry-tags"
+                value={draft.tags}
+                onChange={(event) => setDraft((prev) => ({ ...prev, tags: event.target.value }))}
+                placeholder="工作, 邮箱"
+                autoComplete="off"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="min-h-5 text-micro text-destructive">{error}</p>
+              <Button type="submit" disabled={saving}>
+                {saving ? "保存中…" : "保存"}
+              </Button>
+            </div>
+          </form>
+
           {editor.kind === "edit" ? (
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={saving}
-              onClick={() => void onDelete()}
-            >
-              删除
-            </Button>
+            <div className="mt-7 border-t border-border pt-4">
+              <Button
+                type="button"
+                variant="destructive"
+                className="w-full"
+                disabled={saving}
+                onClick={() => void onDelete()}
+              >
+                删除
+              </Button>
+            </div>
           ) : null}
-        </form>
-      </div>
+        </ScreenBody>
+      </Screen>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-3">
-      <div className="flex items-center justify-between gap-2 border-b border-border pb-2">
-        <h1 className="text-lg font-semibold text-foreground">Stay Key</h1>
-        <div className="flex items-center gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label="设置"
-            onClick={() => setScreen("settings")}
-          >
-            <Settings />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => void lock()}>
-            锁定
-          </Button>
-        </div>
-      </div>
+    <Screen>
+      <BrandHeader
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="设置"
+              onClick={() => setScreen("settings")}
+            >
+              <Settings />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => void lock()}>
+              锁定
+            </Button>
+          </>
+        }
+      />
 
       {tabInfo === undefined ? null : tabInfo.kind === "none" ? (
-        <p className="text-xs text-muted-foreground">当前页无站点</p>
+        <div className="shrink-0 border-b border-border px-4 py-2.5">
+          <p className="text-meta text-muted-foreground">当前页无站点</p>
+        </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="px-3 pt-3">
-            <p className="text-sm font-medium text-foreground">当前站点</p>
-            <p className="text-xs text-muted-foreground">{tabInfo.host}</p>
+        <section aria-labelledby="current-site" className="shrink-0 border-b border-border bg-band">
+          <div className="flex items-baseline justify-between gap-3 px-4 pt-3">
+            <h2
+              id="current-site"
+              className="min-w-0 truncate text-lg font-semibold tracking-[-0.01em] text-foreground"
+            >
+              {tabInfo.host}
+            </h2>
+            <span className="shrink-0 text-micro text-muted-foreground">当前站点</span>
           </div>
           {siteEntries.length > 0 ? (
-            <ul className="mt-1 divide-y divide-border">
+            <ul className="mt-1 pb-1">
               {siteEntries.map((entry) => (
-                <li key={entry.id} className="px-3 py-2.5">
+                <li key={entry.id} className="flex items-center gap-1.5 px-4 py-1.5">
                   <button
                     type="button"
-                    className="w-full rounded-lg text-left hover:bg-accent/60"
+                    className="min-h-8 min-w-0 flex-1 truncate text-left text-meta text-foreground hover:underline"
                     onClick={() => openEdit(entry)}
                   >
-                    <p className="text-sm text-muted-foreground">{maskAccount(entry.username)}</p>
+                    {maskAccount(entry.username)}
                   </button>
-                  <div className="mt-1.5 flex flex-wrap gap-1.5">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => void onCopy("账号", entry.username)}
-                    >
-                      复制账号
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => void onCopy("密码", entry.password)}
-                    >
-                      复制密码
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    size="row"
+                    variant="quiet"
+                    onClick={() => void onCopy("账号", entry.username)}
+                  >
+                    复制账号
+                  </Button>
+                  <Button
+                    type="button"
+                    size="row"
+                    variant="quiet"
+                    onClick={() => void onCopy("密码", entry.password)}
+                  >
+                    复制密码
+                  </Button>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="flex flex-col items-center gap-2 px-3 py-6 text-center">
-              <p className="text-sm text-muted-foreground">本站暂无保存的账号</p>
-              <Button type="button" className="w-full" onClick={() => openCreate(tabInfo.host)}>
+            <div className="flex items-center justify-between gap-3 px-4 py-2">
+              <p className="text-meta text-muted-foreground">本站暂无保存的账号</p>
+              <Button type="button" size="row" onClick={() => openCreate(tabInfo.host)}>
                 保存到本站
               </Button>
             </div>
           )}
-        </div>
+        </section>
       )}
 
-      <div className="flex gap-2">
-        <Input
-          type="search"
-          placeholder="搜索账号或站点"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          className="flex-1"
-        />
+      <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-3">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            type="search"
+            aria-label="搜索账号或站点"
+            placeholder="搜索账号或站点"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            className="pl-8"
+          />
+        </div>
         <Button type="button" variant="secondary" onClick={() => openCreate()}>
           新建
         </Button>
       </div>
-      <p className="text-xs font-medium text-foreground">全部条目</p>
-      {visible.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 px-2 py-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            {entries.length === 0 ? "暂无条目" : "没有匹配的条目"}
-          </p>
-          {entries.length === 0 ? (
-            <Button type="button" variant="secondary" onClick={() => openCreate()}>
-              新建
-            </Button>
-          ) : null}
+
+      <ScreenBody>
+        <div className="flex items-baseline justify-between px-4 pt-4 pb-1.5">
+          <h2 className="text-micro font-medium text-muted-foreground">全部条目</h2>
+          <span className="text-micro tabular-nums text-muted-foreground">{entries.length} 条</span>
         </div>
-      ) : (
-        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-          {visible.map((entry) => (
-            <li key={entry.id} className="px-3 py-2.5 hover:bg-accent/50">
-              <button type="button" className="w-full text-left" onClick={() => openEdit(entry)}>
-                <p className="text-sm font-medium text-foreground">{entry.host}</p>
-                <p className="text-sm text-muted-foreground">{maskAccount(entry.username)}</p>
-              </button>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => void onCopy("账号", entry.username)}
-                >
-                  复制账号
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => void onCopy("密码", entry.password)}
-                >
-                  复制密码
-                </Button>
-                <Button type="button" size="sm" variant="ghost" onClick={() => openEdit(entry)}>
-                  编辑
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-      <p className="mt-auto text-xs text-muted-foreground">
-        复制后约 {Math.round(clipboardClearMs / 1000)} 秒清空剪贴板 · 空闲自动锁定
-      </p>
-    </div>
+
+        {visible.length === 0 ? (
+          <div className="flex min-h-56 flex-col items-center justify-center gap-3 px-4 py-10 text-center">
+            <p className="text-meta text-muted-foreground">
+              {entries.length === 0 ? "暂无条目" : "没有匹配的条目"}
+            </p>
+            {entries.length === 0 ? (
+              <Button type="button" variant="secondary" onClick={() => openCreate()}>
+                新建
+              </Button>
+            ) : null}
+          </div>
+        ) : (
+          <ul>
+            {visible.map((entry) => (
+              <li key={entry.id} className="border-b border-border/70">
+                <div className="px-4 pt-2.5 pb-2">
+                  <button
+                    type="button"
+                    className="flex min-h-8 w-full items-center text-left text-row font-medium text-foreground hover:underline"
+                    onClick={() => openEdit(entry)}
+                    title={entry.host}
+                  >
+                    <span className="min-w-0 truncate">{entry.host}</span>
+                  </button>
+                  <div className="mt-0.5 flex items-center gap-1">
+                    <p className="min-w-0 flex-1 truncate text-meta text-muted-foreground">
+                      {maskAccount(entry.username)}
+                    </p>
+                    <Button
+                      type="button"
+                      size="row"
+                      variant="quiet"
+                      onClick={() => void onCopy("账号", entry.username)}
+                    >
+                      <Copy />
+                      复制账号
+                    </Button>
+                    <Button
+                      type="button"
+                      size="row"
+                      variant="quiet"
+                      onClick={() => void onCopy("密码", entry.password)}
+                    >
+                      <KeyRound />
+                      复制密码
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label="编辑"
+                      onClick={() => openEdit(entry)}
+                    >
+                      <Pencil />
+                    </Button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </ScreenBody>
+
+      <ScreenFooter>
+        <span>剪贴板 {Math.round(clipboardClearMs / 1000)} 秒后清除</span>
+        <span>空闲 {idleLockMinutes} 分钟锁定</span>
+      </ScreenFooter>
+    </Screen>
   );
 }

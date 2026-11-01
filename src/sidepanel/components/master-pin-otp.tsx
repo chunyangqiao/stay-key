@@ -148,8 +148,10 @@ export function MasterPinOtp({
       aria-label={ariaLabel}
       aria-invalid={invalid || undefined}
       className={cn(
-        "flex w-full items-center justify-center gap-2",
-        invalid && "[&_input]:border-destructive [&_input]:ring-3 [&_input]:ring-destructive/20",
+        "grid grid-cols-6 overflow-hidden rounded-lg border bg-background",
+        "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring",
+        "aria-invalid:has-[:focus-visible]:outline-destructive",
+        invalid ? "border-destructive" : "border-input",
         className,
       )}
     >
@@ -170,10 +172,10 @@ export function MasterPinOtp({
           autoFocus={autoFocus && index === 0}
           aria-label={`${ariaLabel} 第 ${index + 1} 位`}
           className={cn(
-            "h-11 w-9 shrink-0 rounded-lg border border-input bg-transparent text-center text-lg font-medium tabular-nums outline-none transition-colors",
-            "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-            "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50",
-            "dark:bg-input/30 dark:disabled:bg-input/80",
+            "h-12 w-full min-w-0 appearance-none rounded-none border-0 bg-transparent text-center text-lg font-medium tabular-nums text-foreground outline-none transition-colors",
+            index > 0 && "border-l border-border",
+            "focus-visible:bg-foreground/[0.03]",
+            "disabled:bg-secondary disabled:text-muted-foreground",
           )}
           onChange={(event) => handleChange(index, event.target.value)}
           onKeyDown={(event) => handleKeyDown(index, event)}
