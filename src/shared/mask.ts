@@ -1,6 +1,7 @@
 /**
- * Mask a credential for list display. Full value stays in memory for copy/edit.
- * Rules (PRD): account keep first 2 + last 2; email mask local part; password fully masked.
+ * Mask a credential for list / current-site display.
+ * Account: keep first 2 + last 2 with "***" in the middle (email: te***13@gmail.com).
+ * Password: always fully masked when not expanded.
  */
 export function maskAccount(value: string): string {
   const trimmed = value.trim();
@@ -19,7 +20,7 @@ export function maskAccount(value: string): string {
 }
 
 export function maskPassword(_value: string): string {
-  return "••••••••";
+  return "••••••";
 }
 
 function maskKeepEnds(value: string): string {
@@ -27,7 +28,7 @@ function maskKeepEnds(value: string): string {
     return "*".repeat(value.length);
   }
   if (value.length <= 4) {
-    return `${value.slice(0, 1)}${"*".repeat(value.length - 2)}${value.slice(-1)}`;
+    return `${value.slice(0, 1)}***${value.slice(-1)}`;
   }
-  return `${value.slice(0, 2)}${"*".repeat(Math.min(6, value.length - 4))}${value.slice(-2)}`;
+  return `${value.slice(0, 2)}***${value.slice(-2)}`;
 }

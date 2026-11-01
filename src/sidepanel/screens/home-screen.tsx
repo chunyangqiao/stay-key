@@ -5,11 +5,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { readActiveTabHost } from "@/shared/active-tab";
+import { readActiveTabHost, readActiveTabInfo, type ActiveTabInfo } from "@/shared/active-tab";
 import { copySecret } from "@/shared/clipboard";
-import { maskAccount } from "@/shared/mask";
 import { DEFAULT_CLIPBOARD_CLEAR_MS } from "@/shared/constants";
 import { createEntryId, parseTags, searchEntries } from "@/shared/entries";
+import { filterEntriesForHost } from "@/shared/host-match";
+import { maskAccount } from "@/shared/mask";
 import { useSessionStore } from "@/shared/session-store";
 import { saveVaultPayload } from "@/shared/vault";
 
@@ -44,39 +45,58 @@ export function HomeScreen() {
   const [draft, setDraft] = React.useState<Draft>(emptyDraft);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
-  const [activeHost, setActiveHost] = React.useState<string | undefined>();
+  const [tabInfo, setTabInfo] = React.useState<ActiveTabInfo | undefined>();
 
-  React.useEffect(() => {
+  const refreshTab = React.useCallback(() => {
     void (async () => {
-      setActiveHost(await readActiveTabHost());
+      setTabInfo(await readActiveTabInfo());
     })();
   }, []);
 
+  React.useEffect(() => {
+    refreshTab();
+    const onActivated = () => refreshTab();
+    const onUpdated = (
+      _tabId: number,
+      changeInfo: { url?: string; status?: string },
+      tab: { active?: boolean },
+    ) => {
+      if (changeInfo.url || changeInfo.status === "complete") {
+        if (tab.active) {
+          refreshTab();
+        }
+      }
+    };
+    chrome.tabs.onActivated.addListener(onActivated);
+    chrome.tabs.onUpdated.addListener(onUpdated);
+    return () => {
+      chrome.tabs.onActivated.removeListener(onActivated);
+      chrome.tabs.onUpdated.removeListener(onUpdated);
+    };
+  }, [refreshTab]);
+
   const entries = payload?.entries ?? [];
-  const visible = React.useMemo(() => {
-    const matched = searchEntries(entries, query);
-    if (!activeHost) {
-      return matched;
-    }
-    return [...matched].sort((a, b) => {
-      const aHit = a.host === activeHost || a.host.endsWith(`.${activeHost}`) ? 0 : 1;
-      const bHit = b.host === activeHost || b.host.endsWith(`.${activeHost}`) ? 0 : 1;
-      return aHit - bHit;
-    });
-  }, [entries, query, activeHost]);
+  const activeHost = tabInfo?.kind === "host" ? tabInfo.host : undefined;
+  const siteEntries = React.useMemo(
+    () => (activeHost ? filterEntriesForHost(entries, activeHost) : []),
+    [entries, activeHost],
+  );
+  const visible = React.useMemo(() => searchEntries(entries, query), [entries, query]);
   const clipboardClearMs = vault?.settings.clipboardClearMs ?? DEFAULT_CLIPBOARD_CLEAR_MS;
 
-  const openCreate = () => {
-    setDraft(emptyDraft());
+  const openCreate = (prefillHost?: string) => {
+    setDraft({ ...emptyDraft(), host: prefillHost ?? "" });
     setError(undefined);
     setEditor({ kind: "create" });
-    void (async () => {
-      const host = await readActiveTabHost();
-      if (!host) {
-        return;
-      }
-      setDraft((prev) => (prev.host.trim() ? prev : { ...prev, host }));
-    })();
+    if (!prefillHost) {
+      void (async () => {
+        const host = await readActiveTabHost();
+        if (!host) {
+          return;
+        }
+        setDraft((prev) => (prev.host.trim() ? prev : { ...prev, host }));
+      })();
+    }
   };
 
   const openEdit = (entry: VaultEntry) => {
@@ -266,6 +286,56 @@ export function HomeScreen() {
           </Button>
         </div>
       </div>
+
+      {tabInfo === undefined ? null : tabInfo.kind === "none" ? (
+        <p className="text-xs text-muted-foreground">当前页无站点</p>
+      ) : (
+        <div className="rounded-xl border border-border bg-card p-3">
+          <p className="text-sm font-medium text-foreground">当前站点</p>
+          <p className="text-xs text-muted-foreground">{tabInfo.host}</p>
+          {siteEntries.length > 0 ? (
+            <ul className="mt-2 flex flex-col gap-2">
+              {siteEntries.map((entry) => (
+                <li key={entry.id} className="rounded-lg border border-border/80 p-2">
+                  <button
+                    type="button"
+                    className="w-full text-left"
+                    onClick={() => openEdit(entry)}
+                  >
+                    <p className="text-sm text-muted-foreground">{maskAccount(entry.username)}</p>
+                  </button>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => void onCopy("账号", entry.username)}
+                    >
+                      复制账号
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => void onCopy("密码", entry.password)}
+                    >
+                      复制密码
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="mt-2 flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">本站暂无保存的账号</p>
+              <Button type="button" onClick={() => openCreate(tabInfo.host)}>
+                保存到本站
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex gap-2">
         <Input
           type="search"
@@ -274,28 +344,21 @@ export function HomeScreen() {
           onChange={(event) => setQuery(event.target.value)}
           className="flex-1"
         />
-        <Button type="button" onClick={openCreate}>
+        <Button type="button" variant="secondary" onClick={() => openCreate()}>
           新建
         </Button>
       </div>
+      <p className="text-xs font-medium text-foreground">全部条目</p>
       {visible.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
-          {entries.length === 0 ? "暂无条目。点「新建」保存第一条。" : "没有匹配的条目。"}
+          {entries.length === 0 ? "暂无条目。点「新建」或「保存到本站」。" : "没有匹配的条目。"}
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
           {visible.map((entry) => (
             <li key={entry.id} className="rounded-xl border border-border bg-card p-3">
               <button type="button" className="w-full text-left" onClick={() => openEdit(entry)}>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-foreground">{entry.host}</p>
-                  {activeHost &&
-                  (entry.host === activeHost || entry.host.endsWith(`.${activeHost}`)) ? (
-                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[0.75rem] font-medium text-secondary-foreground">
-                      当前站
-                    </span>
-                  ) : null}
-                </div>
+                <p className="text-sm font-medium text-foreground">{entry.host}</p>
                 <p className="text-sm text-muted-foreground">{maskAccount(entry.username)}</p>
               </button>
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -324,7 +387,7 @@ export function HomeScreen() {
         </ul>
       )}
       <p className="text-xs text-muted-foreground">
-        复制后约 {Math.round(clipboardClearMs / 1000)} 秒清空剪贴板
+        复制后约 {Math.round(clipboardClearMs / 1000)} 秒清空剪贴板 · 空闲自动锁定
       </p>
     </div>
   );
