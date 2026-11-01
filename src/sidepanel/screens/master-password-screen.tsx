@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { isValidMasterPin, MASTER_PIN_LENGTH } from "@/shared/constants";
+import { isValidMasterPin } from "@/shared/constants";
 import { setPendingMasterPassword } from "@/shared/onboarding-draft";
 import { useSessionStore } from "@/shared/session-store";
 
@@ -13,7 +13,6 @@ export function MasterPasswordScreen() {
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | undefined>();
 
-  const invalidLength = password.length > 0 && password.length !== MASTER_PIN_LENGTH;
   const canSubmit = isValidMasterPin(password);
 
   function handleNext() {
@@ -42,16 +41,12 @@ export function MasterPasswordScreen() {
               setError(undefined);
             }
           }}
-          invalid={Boolean(error) || invalidLength}
+          invalid={Boolean(error)}
           aria-label="主密码"
           autoFocus
           onEnterSubmit={handleNext}
         />
-        {invalidLength ? (
-          <p className="text-xs text-destructive">请输入 6 位数字。</p>
-        ) : (
-          <p className="text-xs text-muted-foreground">请输入 6 位数字</p>
-        )}
+        <p className="text-xs text-muted-foreground">请输入 6 位数字</p>
       </div>
 
       {error ? <p className="text-xs text-destructive">{error}</p> : null}

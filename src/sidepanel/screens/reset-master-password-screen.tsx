@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { isValidMasterPin, MASTER_PIN_LENGTH } from "@/shared/constants";
+import { isValidMasterPin } from "@/shared/constants";
 import { getErrorMessage } from "@/shared/error-message";
 import { useSessionStore } from "@/shared/session-store";
 import { resetMasterPassword } from "@/shared/vault";
@@ -20,7 +20,6 @@ export function ResetMasterPasswordScreen() {
   const [error, setError] = React.useState<string | undefined>();
   const [pending, setPending] = React.useState(false);
 
-  const invalidLength = password.length > 0 && password.length !== MASTER_PIN_LENGTH;
   const canSubmit = Boolean(dek && vault) && isValidMasterPin(password) && !pending;
 
   async function handleSave() {
@@ -72,7 +71,7 @@ export function ResetMasterPasswordScreen() {
             }
           }}
           disabled={pending}
-          invalid={Boolean(error) || invalidLength}
+          invalid={Boolean(error)}
           aria-label="新主密码"
           autoFocus
           onEnterSubmit={() => {
@@ -81,11 +80,7 @@ export function ResetMasterPasswordScreen() {
             }
           }}
         />
-        {invalidLength ? (
-          <p className="text-xs text-destructive">请输入 6 位数字。</p>
-        ) : (
-          <p className="text-xs text-muted-foreground">请输入 6 位数字</p>
-        )}
+        <p className="text-xs text-muted-foreground">请输入 6 位数字</p>
       </div>
 
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
