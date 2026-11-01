@@ -33,6 +33,7 @@ type SessionStore = {
   }) => Promise<void>;
   lock: () => Promise<void>;
   touchActivity: () => Promise<void>;
+  applyPayload: (payload: VaultPayload, vault: PersistedVault) => void;
 };
 
 export const useSessionStore = create<SessionStore>((set, get) => ({
@@ -134,5 +135,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       return;
     }
     await writeUnlockedSession({ ...existing, lastActivityAt: Date.now() });
+  },
+
+  applyPayload: (payload, vault) => {
+    set({ payload, vault });
   },
 }));

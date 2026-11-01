@@ -292,3 +292,17 @@ export async function readRecoveryQuestion(): Promise<string | undefined> {
   const vault = await readPersistedVault();
   return vault?.recoveryQuestion;
 }
+
+export async function saveVaultPayload(
+  dek: CryptoKey,
+  vault: PersistedVault,
+  payload: VaultPayload,
+): Promise<PersistedVault> {
+  const encrypted = await encryptAesGcm(dek, encodeUtf8(JSON.stringify(payload)));
+  const next: PersistedVault = {
+    ...vault,
+    payload: blobToStored(encrypted),
+  };
+  await writePersistedVault(next);
+  return next;
+}
