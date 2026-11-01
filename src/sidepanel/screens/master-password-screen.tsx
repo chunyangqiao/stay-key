@@ -1,11 +1,12 @@
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { isValidMasterPin, MASTER_PIN_LENGTH, sanitizeMasterPinInput } from "@/shared/constants";
+import { isValidMasterPin, MASTER_PIN_LENGTH } from "@/shared/constants";
 import { setPendingMasterPassword } from "@/shared/onboarding-draft";
 import { useSessionStore } from "@/shared/session-store";
+
+import { MasterPinOtp } from "../components/master-pin-otp";
 
 export function MasterPasswordScreen() {
   const setScreen = useSessionStore((state) => state.setScreen);
@@ -32,22 +33,19 @@ export function MasterPasswordScreen() {
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="master-password">主密码</Label>
-        <Input
+        <MasterPinOtp
           id="master-password"
-          type="text"
-          inputMode="numeric"
-          autoComplete="off"
-          pattern="[0-9]*"
-          maxLength={MASTER_PIN_LENGTH}
           value={password}
-          className="tracking-[0.2em]"
-          onChange={(event) => setPassword(sanitizeMasterPinInput(event.target.value))}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && canSubmit) {
-              handleNext();
+          onChange={(next) => {
+            setPassword(next);
+            if (error) {
+              setError(undefined);
             }
           }}
-          aria-invalid={invalidLength || undefined}
+          invalid={Boolean(error) || invalidLength}
+          aria-label="主密码"
+          autoFocus
+          onEnterSubmit={handleNext}
         />
         {invalidLength ? (
           <p className="text-xs text-destructive">请输入 6 位数字。</p>

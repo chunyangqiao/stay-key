@@ -2,11 +2,12 @@ import * as React from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { isValidMasterPin, MASTER_PIN_LENGTH, sanitizeMasterPinInput } from "@/shared/constants";
+import { isValidMasterPin } from "@/shared/constants";
 import { useSessionStore } from "@/shared/session-store";
 import { unlockWithMasterPassword } from "@/shared/vault";
+
+import { MasterPinOtp } from "../components/master-pin-otp";
 
 function formatCooldown(until: number | undefined): string {
   if (!until) {
@@ -31,6 +32,7 @@ export function UnlockScreen() {
 
   const coolingDown = cooldownUntil !== undefined && cooldownUntil > Date.now();
   const canSubmit = isValidMasterPin(password) && !coolingDown && !pending;
+  const otpDisabled = coolingDown || pending;
 
   async function handleUnlock() {
     if (!isValidMasterPin(password)) {
@@ -83,20 +85,24 @@ export function UnlockScreen() {
         <h1 className="text-center text-xl font-semibold text-foreground">保险库已锁定</h1>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="unlock-password">主密码</Label>
-          <Input
+          <Label htmlFor="unlock-password" className="text-center">
+            主密码
+          </Label>
+          <MasterPinOtp
             id="unlock-password"
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            pattern="[0-9]*"
-            maxLength={MASTER_PIN_LENGTH}
             value={password}
-            disabled={coolingDown || pending}
-            className="text-center tracking-[0.2em]"
-            onChange={(event) => setPassword(sanitizeMasterPinInput(event.target.value))}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && canSubmit) {
+            onChange={(next) => {
+              setPassword(next);
+              if (error) {
+                setError(undefined);
+              }
+            }}
+            disabled={otpDisabled}
+            invalid={Boolean(error)}
+            aria-label="主密码"
+            autoFocus
+            onEnterSubmit={() => {
+              if (canSubmit) {
                 void handleUnlock();
               }
             }}

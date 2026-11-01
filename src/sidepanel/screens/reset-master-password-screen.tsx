@@ -2,12 +2,13 @@ import * as React from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { isValidMasterPin, MASTER_PIN_LENGTH, sanitizeMasterPinInput } from "@/shared/constants";
+import { isValidMasterPin, MASTER_PIN_LENGTH } from "@/shared/constants";
 import { getErrorMessage } from "@/shared/error-message";
 import { useSessionStore } from "@/shared/session-store";
 import { resetMasterPassword } from "@/shared/vault";
+
+import { MasterPinOtp } from "../components/master-pin-otp";
 
 export function ResetMasterPasswordScreen() {
   const dek = useSessionStore((state) => state.dek);
@@ -61,22 +62,24 @@ export function ResetMasterPasswordScreen() {
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="reset-master-password">新主密码</Label>
-        <Input
+        <MasterPinOtp
           id="reset-master-password"
-          type="text"
-          inputMode="numeric"
-          autoComplete="off"
-          pattern="[0-9]*"
-          maxLength={MASTER_PIN_LENGTH}
           value={password}
-          className="tracking-[0.2em]"
-          onChange={(event) => setPassword(sanitizeMasterPinInput(event.target.value))}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && canSubmit) {
+          onChange={(next) => {
+            setPassword(next);
+            if (error) {
+              setError(undefined);
+            }
+          }}
+          disabled={pending}
+          invalid={Boolean(error) || invalidLength}
+          aria-label="新主密码"
+          autoFocus
+          onEnterSubmit={() => {
+            if (canSubmit) {
               void handleSave();
             }
           }}
-          aria-invalid={invalidLength || undefined}
         />
         {invalidLength ? (
           <p className="text-xs text-destructive">请输入 6 位数字。</p>
