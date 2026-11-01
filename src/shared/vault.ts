@@ -135,7 +135,10 @@ export async function createVault(input: {
   return { dek, vault };
 }
 
-async function decryptPayload(dek: CryptoKey, vault: PersistedVault): Promise<VaultPayload> {
+export async function loadVaultPayload(
+  dek: CryptoKey,
+  vault: PersistedVault,
+): Promise<VaultPayload> {
   const blob = storedToBlob(vault.payload);
   const bytes = await decryptAesGcm(dek, blob.iv, blob.ciphertext);
   return JSON.parse(decodeUtf8(bytes)) as VaultPayload;
@@ -184,7 +187,7 @@ export async function unlockWithMasterPassword(masterPassword: string): Promise<
     const kek = await deriveAesKey(masterPassword, fromBase64(vault.masterSalt));
     const wrapped = storedToBlob(vault.wrappedDekByMaster);
     const dek = await unwrapDek(kek, wrapped.iv, wrapped.ciphertext);
-    const payload = await decryptPayload(dek, vault);
+    const payload = await loadVaultPayload(dek, vault);
     const cleared: PersistedVault = {
       ...vault,
       masterFailCount: 0,
@@ -230,7 +233,7 @@ export async function unlockWithRecoveryAnswer(answer: string): Promise<UnlockRe
     const kek = await deriveAesKey(answer, fromBase64(vault.recoverySalt));
     const wrapped = storedToBlob(vault.wrappedDekByRecovery);
     const dek = await unwrapDek(kek, wrapped.iv, wrapped.ciphertext);
-    const payload = await decryptPayload(dek, vault);
+    const payload = await loadVaultPayload(dek, vault);
     const cleared: PersistedVault = {
       ...vault,
       recoveryFailCount: 0,

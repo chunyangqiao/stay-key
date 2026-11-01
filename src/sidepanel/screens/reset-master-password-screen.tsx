@@ -51,7 +51,7 @@ export function ResetMasterPasswordScreen() {
         masterPassword: password,
         confirmMasterPassword: confirm,
       });
-      setUnlockedSession({
+      void setUnlockedSession({
         dek,
         vault: nextVault,
         payload: payload ?? { entries: [] },

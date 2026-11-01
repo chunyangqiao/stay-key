@@ -29,5 +29,5 @@ export default defineManifest({
     service_worker: "src/background/index.ts",
     type: "module",
   },
-  permissions: ["sidePanel", "storage"],
+  permissions: ["sidePanel", "storage", "alarms"],
 });

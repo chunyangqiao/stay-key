@@ -9,6 +9,7 @@ import { RecoveryQuestionScreen } from "./screens/recovery-question-screen";
 import { ResetMasterPasswordScreen } from "./screens/reset-master-password-screen";
 import { UnlockScreen } from "./screens/unlock-screen";
 import { WelcomeScreen } from "./screens/welcome-screen";
+import { useIdleLock } from "./use-idle-lock";
 
 export function SidePanel() {
   const hydrate = useSessionStore((state) => state.hydrate);
@@ -18,6 +19,8 @@ export function SidePanel() {
   React.useEffect(() => {
     void hydrate();
   }, [hydrate]);
+
+  useIdleLock();
 
   if (!hydrated) {
     return (

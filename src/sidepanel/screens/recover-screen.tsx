@@ -38,7 +38,7 @@ export function RecoverScreen() {
       const result = await unlockWithRecoveryAnswer(answer);
       if (result.ok) {
         setAnswer("");
-        setUnlockedSession({
+        void setUnlockedSession({
           dek: result.dek,
           vault: result.vault,
           payload: result.payload,

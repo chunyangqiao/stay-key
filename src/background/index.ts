@@ -1,5 +1,35 @@
+import { clearUnlockedSession, readUnlockedSession } from "@/shared/session-persistence";
+import { readPersistedVault } from "@/shared/vault-storage";
+
+const IDLE_ALARM = "stay-key.idle-lock";
+
 chrome.runtime.onInstalled.addListener(() => {
   void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+  void ensureIdleAlarm();
 });
 
 void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+void ensureIdleAlarm();
+
+async function ensureIdleAlarm(): Promise<void> {
+  await chrome.alarms.create(IDLE_ALARM, { periodInMinutes: 0.5 });
+}
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name !== IDLE_ALARM) {
+    return;
+  }
+  void checkIdleLock();
+});
+
+async function checkIdleLock(): Promise<void> {
+  const session = await readUnlockedSession();
+  if (!session) {
+    return;
+  }
+  const vault = await readPersistedVault();
+  const idleLockMs = vault?.settings.idleLockMs ?? 2 * 60 * 1000;
+  if (Date.now() - session.lastActivityAt >= idleLockMs) {
+    await clearUnlockedSession();
+  }
+}

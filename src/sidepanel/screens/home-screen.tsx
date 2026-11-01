@@ -11,7 +11,7 @@ export function HomeScreen() {
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl font-semibold text-foreground">Stay Key</h1>
-        <Button variant="ghost" size="sm" onClick={() => lock()}>
+        <Button variant="ghost" size="sm" onClick={() => void lock()}>
           锁定
         </Button>
       </div>

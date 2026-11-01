@@ -56,7 +56,7 @@ export function RecoveryQuestionScreen() {
         confirmRecoveryAnswer: confirm,
       });
       clearPendingMasterPassword();
-      setUnlockedSession({
+      void setUnlockedSession({
         dek,
         vault,
         payload: { entries: [] },

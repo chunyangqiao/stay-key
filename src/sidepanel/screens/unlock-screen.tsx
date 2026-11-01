@@ -37,7 +37,7 @@ export function UnlockScreen() {
       const result = await unlockWithMasterPassword(password);
       if (result.ok) {
         setPassword("");
-        setUnlockedSession({
+        void setUnlockedSession({
           dek: result.dek,
           vault: result.vault,
           payload: result.payload,

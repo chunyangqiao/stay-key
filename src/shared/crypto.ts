@@ -84,7 +84,7 @@ export async function unwrapDek(
     kek,
     { name: "AES-GCM", iv: iv.buffer as ArrayBuffer },
     { name: "AES-GCM", length: AES_KEY_BITS },
-    false,
+    true,
     ["encrypt", "decrypt"],
   );
 }
