@@ -4,7 +4,9 @@ import { useSessionStore } from "@/shared/session-store";
 
 import { HomeScreen } from "./screens/home-screen";
 import { MasterPasswordScreen } from "./screens/master-password-screen";
+import { RecoverScreen } from "./screens/recover-screen";
 import { RecoveryQuestionScreen } from "./screens/recovery-question-screen";
+import { ResetMasterPasswordScreen } from "./screens/reset-master-password-screen";
 import { UnlockScreen } from "./screens/unlock-screen";
 import { WelcomeScreen } from "./screens/welcome-screen";
 
@@ -31,10 +33,9 @@ export function SidePanel() {
       {screen === "master" ? <MasterPasswordScreen /> : null}
       {screen === "question" ? <RecoveryQuestionScreen /> : null}
       {screen === "unlock" ? <UnlockScreen /> : null}
+      {screen === "recover" ? <RecoverScreen /> : null}
+      {screen === "reset" ? <ResetMasterPasswordScreen /> : null}
       {screen === "home" ? <HomeScreen /> : null}
-      {screen === "recover" || screen === "reset" ? (
-        <p className="text-sm text-muted-foreground">找回 / 重设流程下一步接入。</p>
-      ) : null}
     </main>
   );
 }
