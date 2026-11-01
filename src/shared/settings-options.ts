@@ -21,4 +21,5 @@ export const THEME_OPTIONS = [
 export type ThemePreference = (typeof THEME_OPTIONS)[number]["value"];
 
 /** Placeholder until Product provides a real Issues URL. */
-export const GITHUB_ISSUES_URL: string | undefined = undefined;
+export const GITHUB_ISSUES_URL: string | undefined =
+  "https://github.com/chunyangqiao/stay-key/issues";
