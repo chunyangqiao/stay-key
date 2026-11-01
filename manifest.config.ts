@@ -8,7 +8,6 @@ export default defineManifest({
   description: pkg.description,
   version: pkg.version,
   action: {
-    default_popup: "src/popup/index.html",
     default_title: "Stay Key",
   },
   side_panel: {

@@ -24,12 +24,12 @@
 
 Stay Key is a Manifest V3 Chrome extension. Vite and CRXJS build these contexts:
 
-- `src/popup` is the toolbar popup for recording, viewing, and generating secrets.
 - `src/sidepanel` is the side panel for managing vault entries.
 - `src/content` is the content script. It does not render extension UI into the page.
 - `src/background` is the service worker for session and messaging.
+- `src/index.css` is the shared Tailwind CSS entry imported by UI contexts.
 
-Popup and sidepanel do not import `src/background`. The content script does not import popup or sidepanel UI. Put a module that more than one context imports in `src/shared`.
+Sidepanel does not import `src/background`. The content script does not import sidepanel UI. Put a module that more than one context imports in `src/shared`.
 
 ## User-State Safety  
   

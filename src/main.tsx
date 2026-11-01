@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 
-import { SidePanel } from "./app";
+import { SidePanel } from "./sidepanel/app";
 
 import "./index.css";
 

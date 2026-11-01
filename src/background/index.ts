@@ -1,3 +1,5 @@
 chrome.runtime.onInstalled.addListener(() => {
-  return;
+  void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 });
+
+void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });

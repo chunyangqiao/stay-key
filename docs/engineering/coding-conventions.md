@@ -83,7 +83,7 @@ relative path.
 
 The paths below are illustrative. They only show how groups are separated.
 
-In popup, sidepanel, content script, and background:
+In sidepanel, content script, and background:
 
 1. `react` and `react-dom`.
 2. Other third-party packages.
