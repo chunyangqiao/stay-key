@@ -22,6 +22,7 @@ import { useSessionStore } from "@/shared/session-store";
 import { saveVaultPayload } from "@/shared/vault";
 
 import { BrandHeader, AppHeader } from "../components/app-header";
+import { EntryTags } from "../components/entry-tags";
 import { Screen, ScreenBody, ScreenFooter } from "../components/screen";
 
 import type { VaultEntry } from "@/shared/vault-types";
@@ -325,13 +326,16 @@ export function HomeScreen() {
             <ul className="mt-1 pb-1">
               {siteEntries.map((entry) => (
                 <li key={entry.id} className="flex items-center gap-1.5 px-4 py-1.5">
-                  <button
-                    type="button"
-                    className="min-h-8 min-w-0 flex-1 truncate text-left text-meta text-foreground hover:underline"
-                    onClick={() => openEdit(entry)}
-                  >
-                    {maskAccount(entry.username)}
-                  </button>
+                  <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                    <button
+                      type="button"
+                      className="min-h-8 min-w-0 truncate text-left text-meta text-foreground hover:underline"
+                      onClick={() => openEdit(entry)}
+                    >
+                      {maskAccount(entry.username)}
+                    </button>
+                    <EntryTags tags={entry.tags} />
+                  </div>
                   <Button
                     type="button"
                     size="row"
@@ -411,9 +415,12 @@ export function HomeScreen() {
                     <span className="min-w-0 truncate">{entry.host}</span>
                   </button>
                   <div className="mt-0.5 flex items-center gap-1">
-                    <p className="min-w-0 flex-1 truncate text-meta text-muted-foreground">
-                      {maskAccount(entry.username)}
-                    </p>
+                    <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                      <p className="min-w-0 truncate text-meta text-muted-foreground">
+                        {maskAccount(entry.username)}
+                      </p>
+                      <EntryTags tags={entry.tags} />
+                    </div>
                     <Button
                       type="button"
                       size="row"
