@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { useSessionStore } from "@/shared/session-store";
+import { useSessionStore } from "@/shared/session/session-store";
 
 import { HomeScreen } from "./screens/home-screen";
 import { MasterPasswordScreen } from "./screens/master-password-screen";
@@ -16,7 +16,7 @@ import { SettingsSecurityScreen } from "./screens/settings-security-screen";
 import { SettingsShortcutsScreen } from "./screens/settings-shortcuts-screen";
 import { UnlockScreen } from "./screens/unlock-screen";
 import { WelcomeScreen } from "./screens/welcome-screen";
-import { useIdleLock } from "./use-idle-lock";
+import { useIdleLock } from "./hooks/use-idle-lock";
 
 export function SidePanel() {
   const hydrate = useSessionStore((state) => state.hydrate);

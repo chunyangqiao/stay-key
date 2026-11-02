@@ -7,10 +7,10 @@ import {
   readUnlockedSession,
   writeUnlockedSession,
 } from "./session-persistence";
-import { readPersistedVault } from "./vault-storage";
-import { loadVaultPayload, vaultExists } from "./vault";
+import { readPersistedVault } from "../vault/vault-storage";
+import { loadVaultPayload, vaultExists } from "../vault/vault";
 
-import type { PersistedVault, VaultPayload } from "./vault-types";
+import type { PersistedVault, VaultPayload } from "../vault/vault-types";
 
 export type AppScreen =
   | "welcome"

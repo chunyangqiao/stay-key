@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -28,24 +28,28 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { readActiveTabHost, readActiveTabInfo, type ActiveTabInfo } from "@/shared/active-tab";
-import { copySecret } from "@/shared/clipboard";
+import {
+  readActiveTabHost,
+  readActiveTabInfo,
+  type ActiveTabInfo,
+} from "@/shared/chrome/active-tab";
+import { copySecret } from "@/shared/chrome/clipboard";
 import {
   DEFAULT_CLIPBOARD_CLEAR_MS,
   DEFAULT_CURRENT_SITE_SEGMENT_ENABLED,
   DEFAULT_LIST_MASK_ENABLED,
 } from "@/shared/constants";
-import { createEntryId, parseTags, searchEntries } from "@/shared/entries";
-import { filterEntriesForHost, hostsMatch } from "@/shared/host-match";
-import { maskAccount } from "@/shared/mask";
-import { useSessionStore } from "@/shared/session-store";
-import { saveVaultPayload } from "@/shared/vault";
+import { createEntryId, parseTags, searchEntries } from "@/shared/entries/entries";
+import { filterEntriesForHost, hostsMatch } from "@/shared/entries/host-match";
+import { maskAccount } from "@/shared/entries/mask";
+import { useSessionStore } from "@/shared/session/session-store";
+import { saveVaultPayload } from "@/shared/vault/vault";
 
 import { BrandHeader } from "../components/app-header";
 import { EntryTags } from "../components/entry-tags";
 import { Screen, ScreenBody, ScreenFooter } from "../components/screen";
 
-import type { VaultEntry } from "@/shared/vault-types";
+import type { VaultEntry } from "@/shared/vault/vault-types";
 
 type EditorMode = { kind: "closed" } | { kind: "create" } | { kind: "edit"; entry: VaultEntry };
 

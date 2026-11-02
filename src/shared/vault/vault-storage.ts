@@ -1,4 +1,4 @@
-import { VAULT_STORAGE_KEY } from "./constants";
+import { VAULT_STORAGE_KEY } from "../constants";
 
 import type { PersistedVault } from "./vault-types";
 

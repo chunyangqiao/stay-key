@@ -1,9 +1,9 @@
 import { toast } from "sonner";
 
 import { DEFAULT_CLIPBOARD_CLEAR_MS } from "@/shared/constants";
-import { CLIPBOARD_CLEAR_OPTIONS_MS } from "@/shared/settings-options";
-import { useSessionStore } from "@/shared/session-store";
-import { updateVaultSettings } from "@/shared/vault";
+import { CLIPBOARD_CLEAR_OPTIONS_MS } from "@/shared/settings/settings-options";
+import { useSessionStore } from "@/shared/session/session-store";
+import { updateVaultSettings } from "@/shared/vault/vault";
 
 import { AppHeader } from "../components/app-header";
 import { Screen, ScreenBody } from "../components/screen";

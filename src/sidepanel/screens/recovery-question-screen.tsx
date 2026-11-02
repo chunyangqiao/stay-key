@@ -12,9 +12,9 @@ import {
   clearPendingMasterPassword,
   setPendingMasterPassword,
   takePendingMasterPassword,
-} from "@/shared/onboarding-draft";
-import { useSessionStore } from "@/shared/session-store";
-import { createVault } from "@/shared/vault";
+} from "@/shared/onboarding/onboarding-draft";
+import { useSessionStore } from "@/shared/session/session-store";
+import { createVault } from "@/shared/vault/vault";
 
 import { BrandHeader } from "../components/app-header";
 import { Screen, ScreenBody } from "../components/screen";

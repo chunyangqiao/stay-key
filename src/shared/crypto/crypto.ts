@@ -1,5 +1,5 @@
-import { AES_KEY_BITS, IV_BYTE_LENGTH, PBKDF2_ITERATIONS, SALT_BYTE_LENGTH } from "./constants";
-import { randomBytes } from "./bytes";
+import { AES_KEY_BITS, IV_BYTE_LENGTH, PBKDF2_ITERATIONS, SALT_BYTE_LENGTH } from "../constants";
+import { randomBytes } from "../bytes";
 
 export async function deriveAesKey(secret: string, salt: Uint8Array): Promise<CryptoKey> {
   const baseKey = await crypto.subtle.importKey(

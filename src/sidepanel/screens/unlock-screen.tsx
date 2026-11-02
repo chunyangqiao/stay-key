@@ -2,8 +2,8 @@ import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import { isValidMasterPin } from "@/shared/constants";
-import { useSessionStore } from "@/shared/session-store";
-import { unlockWithMasterPassword } from "@/shared/vault";
+import { useSessionStore } from "@/shared/session/session-store";
+import { unlockWithMasterPassword } from "@/shared/vault/vault";
 
 import { MasterPinOtp } from "../components/master-pin-otp";
 import { Screen, ScreenBody } from "../components/screen";

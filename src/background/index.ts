@@ -1,5 +1,5 @@
-import { clearUnlockedSession, readUnlockedSession } from "@/shared/session-persistence";
-import { readPersistedVault } from "@/shared/vault-storage";
+import { clearUnlockedSession, readUnlockedSession } from "@/shared/session/session-persistence";
+import { readPersistedVault } from "@/shared/vault/vault-storage";
 
 const IDLE_ALARM = "stay-key.idle-lock";
 

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 export function Screen({ children, className }: { children: ReactNode; className?: string }) {
   return <div className={cn("flex h-full min-h-0 flex-col", className)}>{children}</div>;

@@ -3,8 +3,8 @@ import * as React from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSessionStore } from "@/shared/session-store";
-import { unlockWithRecoveryAnswer } from "@/shared/vault";
+import { useSessionStore } from "@/shared/session/session-store";
+import { unlockWithRecoveryAnswer } from "@/shared/vault/vault";
 
 import { BrandHeader } from "../components/app-header";
 import { Screen, ScreenBody } from "../components/screen";

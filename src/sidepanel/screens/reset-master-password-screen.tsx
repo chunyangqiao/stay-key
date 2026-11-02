@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { isValidMasterPin } from "@/shared/constants";
 import { getErrorMessage } from "@/shared/error-message";
-import { useSessionStore } from "@/shared/session-store";
-import { resetMasterPassword } from "@/shared/vault";
+import { useSessionStore } from "@/shared/session/session-store";
+import { resetMasterPassword } from "@/shared/vault/vault";
 
 import { BrandHeader } from "../components/app-header";
 import { MasterPinOtp } from "../components/master-pin-otp";

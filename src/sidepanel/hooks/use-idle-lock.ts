@@ -1,7 +1,7 @@
 import * as React from "react";
 import { toast } from "sonner";
 
-import { useSessionStore } from "@/shared/session-store";
+import { useSessionStore } from "@/shared/session/session-store";
 
 const ACTIVITY_EVENTS = ["pointerdown", "keydown", "scroll", "input"] as const;
 
@@ -42,7 +42,7 @@ export function useIdleLock() {
 
     const intervalId = window.setInterval(() => {
       void (async () => {
-        const { readUnlockedSession } = await import("@/shared/session-persistence");
+        const { readUnlockedSession } = await import("@/shared/session/session-persistence");
         const session = await readUnlockedSession();
         if (!session) {
           toast.message("已自动锁定");

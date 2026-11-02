@@ -27,7 +27,7 @@ Stay Key is a Manifest V3 Chrome extension. Vite and CRXJS build these contexts:
 - `src/sidepanel` is the side panel for managing vault entries.
 - `src/background` is the service worker for session and messaging.
 - `src/index.css` is the shared Tailwind CSS entry imported by UI contexts.
-- `src/shared` holds modules used by more than one context (crypto, storage, session).
+- `src/shared` holds modules used by more than one context. It is grouped into `crypto`, `session`, `vault`, `entries`, `chrome`, `settings`, and `onboarding`. `constants`, `bytes`, `error-message`, and `utils` stay at the `src/shared` root.
 
 Sidepanel does not import `src/background`. Put a module that more than one context imports in `src/shared`.
 

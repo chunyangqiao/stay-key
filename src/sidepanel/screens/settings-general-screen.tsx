@@ -1,7 +1,7 @@
 import { useTheme } from "next-themes";
 
-import { THEME_OPTIONS, type ThemePreference } from "@/shared/settings-options";
-import { useSessionStore } from "@/shared/session-store";
+import { THEME_OPTIONS, type ThemePreference } from "@/shared/settings/settings-options";
+import { useSessionStore } from "@/shared/session/session-store";
 
 import { AppHeader } from "../components/app-header";
 import { Screen, ScreenBody, SectionLabel } from "../components/screen";

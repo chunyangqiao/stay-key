@@ -2,8 +2,8 @@ import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import { isValidMasterPin } from "@/shared/constants";
-import { setPendingMasterPassword } from "@/shared/onboarding-draft";
-import { useSessionStore } from "@/shared/session-store";
+import { setPendingMasterPassword } from "@/shared/onboarding/onboarding-draft";
+import { useSessionStore } from "@/shared/session/session-store";
 
 import { BrandHeader } from "../components/app-header";
 import { MasterPinOtp } from "../components/master-pin-otp";

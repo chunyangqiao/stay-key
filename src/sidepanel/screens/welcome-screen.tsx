@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useSessionStore } from "@/shared/session-store";
+import { useSessionStore } from "@/shared/session/session-store";
 
 export function WelcomeScreen() {
   const setScreen = useSessionStore((state) => state.setScreen);

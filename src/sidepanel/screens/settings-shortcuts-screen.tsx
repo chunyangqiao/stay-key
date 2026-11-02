@@ -2,8 +2,8 @@ import * as React from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { openChromeShortcutsPage, readActionShortcut } from "@/shared/open-chrome-page";
-import { useSessionStore } from "@/shared/session-store";
+import { openChromeShortcutsPage, readActionShortcut } from "@/shared/chrome/open-chrome-page";
+import { useSessionStore } from "@/shared/session/session-store";
 
 import { AppHeader } from "../components/app-header";
 import { Screen, ScreenBody, SectionLabel } from "../components/screen";

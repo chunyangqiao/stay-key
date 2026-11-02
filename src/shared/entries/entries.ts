@@ -1,6 +1,6 @@
 import Fuse from "fuse.js";
 
-import type { VaultEntry } from "./vault-types";
+import type { VaultEntry } from "../vault/vault-types";
 
 export function createEntryId(): string {
   return crypto.randomUUID();

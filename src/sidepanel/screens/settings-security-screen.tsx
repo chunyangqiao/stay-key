@@ -1,9 +1,9 @@
 import { toast } from "sonner";
 
 import { DEFAULT_IDLE_LOCK_MS } from "@/shared/constants";
-import { IDLE_LOCK_OPTIONS_MS } from "@/shared/settings-options";
-import { useSessionStore } from "@/shared/session-store";
-import { updateVaultSettings } from "@/shared/vault";
+import { IDLE_LOCK_OPTIONS_MS } from "@/shared/settings/settings-options";
+import { useSessionStore } from "@/shared/session/session-store";
+import { updateVaultSettings } from "@/shared/vault/vault";
 
 import { AppHeader } from "../components/app-header";
 import { Screen, ScreenBody } from "../components/screen";

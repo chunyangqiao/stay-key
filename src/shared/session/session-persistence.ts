@@ -1,5 +1,5 @@
-import { AES_KEY_BITS } from "./constants";
-import { fromBase64, toBase64 } from "./bytes";
+import { AES_KEY_BITS } from "../constants";
+import { fromBase64, toBase64 } from "../bytes";
 
 const SESSION_KEY = "stay-key.unlocked-session";
 

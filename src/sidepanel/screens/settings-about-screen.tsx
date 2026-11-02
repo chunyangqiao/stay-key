@@ -3,9 +3,9 @@ import * as React from "react";
 import { ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { openExternalUrl } from "@/shared/open-chrome-page";
-import { GITHUB_ISSUES_URL } from "@/shared/settings-options";
-import { useSessionStore } from "@/shared/session-store";
+import { openExternalUrl } from "@/shared/chrome/open-chrome-page";
+import { GITHUB_ISSUES_URL } from "@/shared/settings/settings-options";
+import { useSessionStore } from "@/shared/session/session-store";
 
 import { AppHeader } from "../components/app-header";
 import { Screen, ScreenBody } from "../components/screen";

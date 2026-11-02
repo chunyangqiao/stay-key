@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { fromBase64, toBase64, decodeUtf8, encodeUtf8 } from "./bytes";
+import { fromBase64, toBase64, decodeUtf8, encodeUtf8 } from "../bytes";
 import {
   COOLDOWN_MS,
   DEFAULT_CLIPBOARD_CLEAR_MS,
@@ -10,7 +10,7 @@ import {
   isValidMasterPin,
   MAX_FAILED_ATTEMPTS,
   RECOVERY_ANSWER_MIN_LENGTH,
-} from "./constants";
+} from "../constants";
 import {
   createSalt,
   decryptAesGcm,
@@ -19,7 +19,7 @@ import {
   generateDek,
   unwrapDek,
   wrapDek,
-} from "./crypto";
+} from "../crypto/crypto";
 import { readPersistedVault, writePersistedVault } from "./vault-storage";
 
 import type { CipherBlob, PersistedVault, VaultPayload } from "./vault-types";
