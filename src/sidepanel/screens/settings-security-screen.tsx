@@ -50,6 +50,15 @@ export function SettingsSecurityScreen() {
           onChange={(next) => void patchIdle(next)}
         />
 
+        <div
+          className="mt-3 flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-border bg-background px-3"
+          role="group"
+          aria-label="系统锁屏后锁定"
+        >
+          <span className="text-sm font-medium text-foreground">系统锁屏后锁定</span>
+          <span className="text-meta text-muted-foreground">无法关闭</span>
+        </div>
+
         <SectionLabel className="mt-6">剪贴板</SectionLabel>
         <button
           type="button"
