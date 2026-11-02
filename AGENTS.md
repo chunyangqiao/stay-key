@@ -42,6 +42,15 @@ Sidepanel does not import `src/background`. Put a module that more than one cont
 - Start the commit message with a Conventional Commits type: `feat`, `fix`, `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, or `test`. Use `feat` for a new feature and `fix` for a bug fix.
 - Before committing, run `pnpm fmt`, then `pnpm lint`.
 
+## Release
+
+`main` publishes a stable GitHub Release. `beta` publishes a prerelease. Feature-branch pushes do not publish. Read `docs/engineering/release.md` before adding a changeset, changing the package version, editing `.github/workflows/release.yml`, or changing the manifest version in `manifest.config.ts`.
+
+- Ship a change with `pnpm exec changeset` on the feature branch. CI on `main` or `beta` runs `changeset version`, builds, and attaches `release/stay-key-<version>.zip` to Release `v<version>`.
+- Keep `.changeset/pre.json` on `beta`. Remove it from any change that merges to `main`. A changeset consumed on `beta` does not publish `main`; add a changeset to the `main` merge.
+- Leave the version bump to CI. The CI commit subject is `chore: version packages`.
+- `manifest.config.ts` stores the changesets version in `version_name` and a Chrome-safe `version`. The settings screens show `version_name`. For one semver, the beta manifest `version` is greater than the stable `version`.
+
 ## Agent skills
 
 ### Issue tracker
