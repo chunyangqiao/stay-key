@@ -1,4 +1,6 @@
 import * as React from "react";
+
+import { useNavigate } from "react-router";
 import {
   ArrowLeft,
   ChevronRight,
@@ -46,6 +48,7 @@ import { useSessionStore } from "@/shared/session/session-store";
 import { saveVaultPayload } from "@/shared/vault/vault";
 
 import { BrandHeader } from "../components/app-header";
+import { panelPaths } from "../paths";
 import { EntryTags } from "../components/entry-tags";
 import { Screen, ScreenBody, ScreenFooter } from "../components/screen";
 
@@ -110,8 +113,8 @@ function siteLetter(host: string): string {
 }
 
 export function HomeScreen() {
+  const navigate = useNavigate();
   const lock = useSessionStore((state) => state.lock);
-  const setScreen = useSessionStore((state) => state.setScreen);
   const payload = useSessionStore((state) => state.payload);
   const vault = useSessionStore((state) => state.vault);
   const dek = useSessionStore((state) => state.dek);
@@ -243,6 +246,9 @@ export function HomeScreen() {
     }
     const nextPayload = { entries: nextEntries };
     const nextVault = await saveVaultPayload(dek, vault, nextPayload);
+    if (!nextVault) {
+      throw new Error("会话未解锁");
+    }
     applyPayload(nextPayload, nextVault);
   };
 
@@ -502,7 +508,7 @@ export function HomeScreen() {
               variant="ghost"
               size="icon"
               aria-label="设置"
-              onClick={() => setScreen("settings")}
+              onClick={() => void navigate(panelPaths.settings)}
             >
               <Settings />
             </Button>

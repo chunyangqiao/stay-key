@@ -179,6 +179,27 @@ export function SettingsNavRow({
   );
 }
 
+export function SettingsActionRow({
+  label,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex h-11 w-full items-center px-3 text-left text-sm font-medium text-foreground transition-colors border-t border-border first:border-t-0 hover:bg-foreground/[0.03] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring disabled:opacity-50"
+    >
+      {label}
+    </button>
+  );
+}
+
 export function SettingsStaticRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex h-11 w-full items-center justify-between gap-3 border-t border-border px-3 first:border-t-0">

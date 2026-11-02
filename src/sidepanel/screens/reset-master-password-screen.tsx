@@ -1,4 +1,6 @@
 import * as React from "react";
+
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +11,7 @@ import { useSessionStore } from "@/shared/session/session-store";
 import { resetMasterPassword } from "@/shared/vault/vault";
 
 import { BrandHeader } from "../components/app-header";
+import { panelPaths } from "../paths";
 import { MasterPinOtp } from "../components/master-pin-otp";
 import { Screen, ScreenBody } from "../components/screen";
 
@@ -16,6 +19,7 @@ export function ResetMasterPasswordScreen() {
   const dek = useSessionStore((state) => state.dek);
   const vault = useSessionStore((state) => state.vault);
   const payload = useSessionStore((state) => state.payload);
+  const navigate = useNavigate();
   const setUnlockedSession = useSessionStore((state) => state.setUnlockedSession);
 
   const [password, setPassword] = React.useState("");
@@ -46,8 +50,8 @@ export function ResetMasterPasswordScreen() {
         dek,
         vault: nextVault,
         payload: payload ?? { entries: [] },
-        screen: "home",
       });
+      void navigate(panelPaths.home, { replace: true });
       toast.success("主密码已更新");
     } catch (caught) {
       setError(getErrorMessage(caught));

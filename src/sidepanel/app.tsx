@@ -1,27 +1,23 @@
 import * as React from "react";
 
+import { MemoryRouter } from "react-router";
+
 import { useSessionStore } from "@/shared/session/session-store";
 
-import { HomeScreen } from "./screens/home-screen";
-import { MasterPasswordScreen } from "./screens/master-password-screen";
-import { RecoverScreen } from "./screens/recover-screen";
-import { RecoveryQuestionScreen } from "./screens/recovery-question-screen";
-import { ResetMasterPasswordScreen } from "./screens/reset-master-password-screen";
-import { SettingsAboutScreen } from "./screens/settings-about-screen";
-import { SettingsRecoveryScreen } from "./screens/settings-recovery-screen";
-import { SettingsClipboardScreen } from "./screens/settings-clipboard-screen";
-import { SettingsGeneralScreen } from "./screens/settings-general-screen";
-import { SettingsHubScreen } from "./screens/settings-hub-screen";
-import { SettingsSecurityScreen } from "./screens/settings-security-screen";
-import { SettingsShortcutsScreen } from "./screens/settings-shortcuts-screen";
-import { UnlockScreen } from "./screens/unlock-screen";
-import { WelcomeScreen } from "./screens/welcome-screen";
 import { useIdleLock } from "./hooks/use-idle-lock";
+import { entryPathForRegion, sessionRegion } from "./paths";
+import { PanelRoutes } from "./routes";
 
 export function SidePanel() {
   const hydrate = useSessionStore((state) => state.hydrate);
   const hydrated = useSessionStore((state) => state.hydrated);
-  const screen = useSessionStore((state) => state.screen);
+  const hasVault = useSessionStore((state) => state.hasVault);
+  const unlocked = useSessionStore((state) => state.unlocked);
+  const region = sessionRegion(hasVault, unlocked);
+  const entryPath = React.useMemo(
+    () => (hydrated ? entryPathForRegion(region) : undefined),
+    [hydrated, region],
+  );
 
   React.useEffect(() => {
     void hydrate();
@@ -29,7 +25,7 @@ export function SidePanel() {
 
   useIdleLock();
 
-  if (!hydrated) {
+  if (!hydrated || !entryPath) {
     return (
       <main className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
         <div className="mx-auto flex h-full w-full max-w-app flex-col overflow-hidden">
@@ -54,20 +50,9 @@ export function SidePanel() {
   return (
     <main className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       <div className="mx-auto flex h-full w-full max-w-app flex-col overflow-hidden">
-        {screen === "welcome" ? <WelcomeScreen /> : null}
-        {screen === "master" ? <MasterPasswordScreen /> : null}
-        {screen === "question" ? <RecoveryQuestionScreen /> : null}
-        {screen === "unlock" ? <UnlockScreen /> : null}
-        {screen === "recover" ? <RecoverScreen /> : null}
-        {screen === "reset" ? <ResetMasterPasswordScreen /> : null}
-        {screen === "home" ? <HomeScreen /> : null}
-        {screen === "settings" ? <SettingsHubScreen /> : null}
-        {screen === "settings-general" ? <SettingsGeneralScreen /> : null}
-        {screen === "settings-shortcuts" ? <SettingsShortcutsScreen /> : null}
-        {screen === "settings-security" ? <SettingsSecurityScreen /> : null}
-        {screen === "settings-clipboard" ? <SettingsClipboardScreen /> : null}
-        {screen === "settings-about" ? <SettingsAboutScreen /> : null}
-        {screen === "settings-recovery" ? <SettingsRecoveryScreen /> : null}
+        <MemoryRouter key={region} initialEntries={[entryPath]}>
+          <PanelRoutes />
+        </MemoryRouter>
       </div>
     </main>
   );
