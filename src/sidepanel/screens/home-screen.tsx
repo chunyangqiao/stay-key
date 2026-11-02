@@ -1,7 +1,22 @@
 import * as React from "react";
-import { Copy, Inbox, KeyRound, Pencil, Search, Settings } from "lucide-react";
+import {
+  ArrowLeft,
+  Copy,
+  Eye,
+  EyeOff,
+  Globe,
+  Inbox,
+  KeyRound,
+  Lock,
+  Pencil,
+  Search,
+  Settings,
+  Tag,
+  User,
+} from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -21,7 +36,7 @@ import { maskAccount } from "@/shared/mask";
 import { useSessionStore } from "@/shared/session-store";
 import { saveVaultPayload } from "@/shared/vault";
 
-import { BrandHeader, AppHeader } from "../components/app-header";
+import { BrandHeader } from "../components/app-header";
 import { EntryTags } from "../components/entry-tags";
 import { Screen, ScreenBody, ScreenFooter } from "../components/screen";
 
@@ -56,6 +71,7 @@ export function HomeScreen() {
   const [draft, setDraft] = React.useState<Draft>(emptyDraft);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
+  const [showPassword, setShowPassword] = React.useState(false);
   const [tabInfo, setTabInfo] = React.useState<ActiveTabInfo | undefined>();
 
   const refreshTab = React.useCallback(() => {
@@ -97,6 +113,7 @@ export function HomeScreen() {
   const openCreate = (prefillHost?: string) => {
     setDraft({ ...emptyDraft(), host: prefillHost ?? "" });
     setError(undefined);
+    setShowPassword(false);
     setEditor({ kind: "create" });
     if (!prefillHost) {
       void (async () => {
@@ -117,12 +134,14 @@ export function HomeScreen() {
       tags: entry.tags.join(", "),
     });
     setError(undefined);
+    setShowPassword(false);
     setEditor({ kind: "edit", entry });
   };
 
   const closeEditor = () => {
     setEditor({ kind: "closed" });
     setError(undefined);
+    setShowPassword(false);
   };
 
   const persist = async (nextEntries: VaultEntry[]) => {
@@ -205,82 +224,167 @@ export function HomeScreen() {
   };
 
   if (editor.kind !== "closed") {
+    const isEdit = editor.kind === "edit";
+    const parsedTags = parseTags(draft.tags);
+    const fieldClass =
+      "flex min-h-14 items-center gap-3 rounded-xl border border-border bg-background px-3 py-2";
+    const fieldInputClass =
+      "h-auto w-full border-0 bg-transparent p-0 text-sm text-foreground shadow-none outline-none focus-visible:ring-0";
+
     return (
       <Screen>
-        <AppHeader title={editor.kind === "edit" ? "编辑条目" : "新建条目"} onBack={closeEditor} />
-        <ScreenBody className="px-4 pt-5 pb-10">
-          <form className="flex flex-col gap-4" onSubmit={(event) => void onSave(event)}>
-            <div>
-              <Label htmlFor="entry-host">站点 / 主机</Label>
-              <Input
-                className="mt-1.5"
-                id="entry-host"
-                value={draft.host}
-                onChange={(event) => setDraft((prev) => ({ ...prev, host: event.target.value }))}
-                placeholder="example.com"
-                autoComplete="off"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="entry-username">账号</Label>
-              <Input
-                className="mt-1.5"
-                id="entry-username"
-                value={draft.username}
-                onChange={(event) =>
-                  setDraft((prev) => ({ ...prev, username: event.target.value }))
-                }
-                autoComplete="username"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="entry-password">密码</Label>
-              <Input
-                className="mt-1.5"
-                id="entry-password"
-                type="password"
-                value={draft.password}
-                onChange={(event) =>
-                  setDraft((prev) => ({ ...prev, password: event.target.value }))
-                }
-                autoComplete="new-password"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="entry-tags">标签（可选）</Label>
-              <Input
-                className="mt-1.5"
-                id="entry-tags"
-                value={draft.tags}
-                onChange={(event) => setDraft((prev) => ({ ...prev, tags: event.target.value }))}
-                placeholder="工作, 邮箱"
-                autoComplete="off"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <p className="min-h-5 text-micro text-destructive">{error}</p>
-              <Button type="submit" disabled={saving}>
-                {saving ? "保存中…" : "保存"}
-              </Button>
-            </div>
-          </form>
+        <header className="relative flex h-12 shrink-0 items-center border-b border-border px-2.5">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="relative z-10 -ml-0.5"
+            aria-label="返回"
+            onClick={closeEditor}
+          >
+            <ArrowLeft />
+          </Button>
+          <h1 className="pointer-events-none absolute inset-x-0 text-center text-row font-semibold tracking-[-0.01em] text-foreground">
+            {isEdit ? "编辑条目" : "保存密码"}
+          </h1>
+        </header>
 
-          {editor.kind === "edit" ? (
-            <div className="mt-7 border-t border-border pt-4">
+        <ScreenBody className="px-4 pt-5 pb-10">
+          <div className="flex flex-col items-center text-center">
+            <div
+              className="relative grid size-14 place-items-center rounded-full bg-primary text-primary-foreground"
+              aria-hidden
+            >
+              <KeyRound className="size-6" strokeWidth={2} />
+              <span className="absolute inset-0 m-auto h-0.5 w-8 -rotate-45 rounded-full bg-primary-foreground" />
+            </div>
+            <h2 className="mt-3 text-section font-semibold text-foreground">
+              {isEdit ? "编辑本机已保存账号" : "保存当前站点账号？"}
+            </h2>
+            <p className="mt-1 text-meta text-muted-foreground">仅加密保存在本机</p>
+          </div>
+
+          <form className="mt-6 flex flex-col gap-3" onSubmit={(event) => void onSave(event)}>
+            <div className={fieldClass}>
+              <Globe className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+              <span className="h-8 w-px shrink-0 bg-border" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <Label htmlFor="entry-host" className="text-micro text-muted-foreground">
+                  网站
+                </Label>
+                <Input
+                  id="entry-host"
+                  className={fieldInputClass}
+                  value={draft.host}
+                  onChange={(event) => setDraft((prev) => ({ ...prev, host: event.target.value }))}
+                  placeholder="example.com"
+                  autoComplete="off"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className={fieldClass}>
+              <User className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+              <span className="h-8 w-px shrink-0 bg-border" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <Label htmlFor="entry-username" className="text-micro text-muted-foreground">
+                  账号
+                </Label>
+                <Input
+                  id="entry-username"
+                  className={fieldInputClass}
+                  value={draft.username}
+                  onChange={(event) =>
+                    setDraft((prev) => ({ ...prev, username: event.target.value }))
+                  }
+                  autoComplete="username"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className={fieldClass}>
+              <Lock className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+              <span className="h-8 w-px shrink-0 bg-border" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <Label htmlFor="entry-password" className="text-micro text-muted-foreground">
+                  密码
+                </Label>
+                <Input
+                  id="entry-password"
+                  className={fieldInputClass}
+                  type={showPassword ? "text" : "password"}
+                  value={draft.password}
+                  onChange={(event) =>
+                    setDraft((prev) => ({ ...prev, password: event.target.value }))
+                  }
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
               <Button
                 type="button"
-                variant="destructive"
-                className="w-full"
+                variant="ghost"
+                size="icon"
+                className="shrink-0"
+                aria-label={showPassword ? "隐藏密码" : "显示密码"}
+                onClick={() => setShowPassword((v) => !v)}
+              >
+                {showPassword ? <EyeOff /> : <Eye />}
+              </Button>
+            </div>
+
+            <div className={fieldClass}>
+              <Tag className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+              <span className="h-8 w-px shrink-0 bg-border" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <Label htmlFor="entry-tags" className="text-micro text-muted-foreground">
+                  标签
+                </Label>
+                <Input
+                  id="entry-tags"
+                  className={fieldInputClass}
+                  value={draft.tags}
+                  onChange={(event) => setDraft((prev) => ({ ...prev, tags: event.target.value }))}
+                  placeholder="添加标签（可选）"
+                  autoComplete="off"
+                />
+              </div>
+              {parsedTags[0] ? (
+                <Badge variant="default" className="max-w-[5.5rem] shrink-0 truncate rounded-md">
+                  {parsedTags[0]}
+                </Badge>
+              ) : null}
+            </div>
+
+            <p className="min-h-5 text-micro text-destructive">{error}</p>
+
+            <Button type="submit" className="mt-1 w-full" disabled={saving}>
+              {saving ? "保存中…" : "保存"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={saving}
+              onClick={closeEditor}
+            >
+              取消
+            </Button>
+
+            {isEdit ? (
+              <Button
+                type="button"
+                variant="ghost"
+                className="mt-2 w-full text-destructive hover:text-destructive"
                 disabled={saving}
                 onClick={() => void onDelete()}
               >
                 删除
               </Button>
-            </div>
-          ) : null}
+            ) : null}
+          </form>
         </ScreenBody>
       </Screen>
     );
