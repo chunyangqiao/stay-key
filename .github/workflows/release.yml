@@ -1,0 +1,150 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+      - beta
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Use the branch tip
+        run: |
+          git fetch origin "${GITHUB_REF_NAME}"
+          git checkout -B "${GITHUB_REF_NAME}" "origin/${GITHUB_REF_NAME}"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 12.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          HUSKY: "0"
+
+      - name: Detect pending changesets
+        id: changesets
+        run: |
+          pending=false
+          shopt -s nullglob
+          for file in .changeset/*.md; do
+            name="$(basename "$file")"
+            if [ "$name" != "README.md" ]; then
+              pending=true
+              break
+            fi
+          done
+          echo "pending=${pending}" >> "$GITHUB_OUTPUT"
+
+      - name: Reject prerelease mode on main
+        if: steps.changesets.outputs.pending == 'true' && github.ref_name == 'main'
+        run: |
+          if [ -f .changeset/pre.json ]; then
+            echo "main cannot release while .changeset/pre.json is present. Exit prerelease mode before merging to main."
+            exit 1
+          fi
+
+      - name: Enter beta prerelease mode
+        if: steps.changesets.outputs.pending == 'true' && github.ref_name == 'beta'
+        run: |
+          if [ ! -f .changeset/pre.json ]; then
+            pnpm exec changeset pre enter beta
+          fi
+
+      - name: Version packages
+        if: steps.changesets.outputs.pending == 'true'
+        run: pnpm exec changeset version
+
+      - name: Check for a version commit without a release
+        id: retry
+        if: steps.changesets.outputs.pending != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          message="$(git log -1 --format=%s)"
+          if [ "$message" != "chore: version packages" ]; then
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          version="$(node -p "require('./package.json').version")"
+          if gh release view "v${version}" >/dev/null 2>&1; then
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "release=true" >> "$GITHUB_OUTPUT"
+
+      - name: Build and pack
+        if: steps.changesets.outputs.pending == 'true' || steps.retry.outputs.release == 'true'
+        run: pnpm build
+
+      - name: Commit the version bump
+        if: steps.changesets.outputs.pending == 'true'
+        env:
+          HUSKY: "0"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json CHANGELOG.md .changeset
+          git commit -m "chore: version packages"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Publish GitHub Release
+        if: steps.changesets.outputs.pending == 'true' || steps.retry.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          archive="release/stay-key-${version}.zip"
+          if [ ! -f "$archive" ]; then
+            echo "Missing ${archive}"
+            exit 1
+          fi
+          notes="${RUNNER_TEMP}/release-notes.md"
+          awk '
+            BEGIN { printing = 0 }
+            /^## / {
+              if (printing) {
+                exit
+              }
+              printing = 1
+            }
+            printing { print }
+          ' CHANGELOG.md > "$notes"
+          if [ ! -s "$notes" ]; then
+            echo "Changelog section is empty"
+            exit 1
+          fi
+          target="$(git rev-parse HEAD)"
+          if [ "${GITHUB_REF_NAME}" = "beta" ]; then
+            gh release create "v${version}" "$archive" \
+              --title "v${version}" \
+              --notes-file "$notes" \
+              --target "$target" \
+              --prerelease
+          else
+            gh release create "v${version}" "$archive" \
+              --title "v${version}" \
+              --notes-file "$notes" \
+              --target "$target"
+          fi

@@ -18,7 +18,8 @@ import { AppHeader } from "../components/app-header";
 import { Screen, ScreenBody, ScreenFooter, SectionLabel } from "../components/screen";
 import { SettingsGroup, SettingsNavRow, SettingsStaticRow } from "./settings-shell";
 
-const VERSION = chrome.runtime.getManifest().version;
+const manifest = chrome.runtime.getManifest();
+const VERSION = manifest.version_name ?? manifest.version;
 
 export function SettingsHubScreen() {
   const setScreen = useSessionStore((state) => state.setScreen);

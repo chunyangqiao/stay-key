@@ -10,7 +10,8 @@ import { useSessionStore } from "@/shared/session/session-store";
 import { AppHeader } from "../components/app-header";
 import { Screen, ScreenBody } from "../components/screen";
 
-const VERSION = chrome.runtime.getManifest().version;
+const manifest = chrome.runtime.getManifest();
+const VERSION = manifest.version_name ?? manifest.version;
 
 export function SettingsAboutScreen() {
   const setScreen = useSessionStore((state) => state.setScreen);

@@ -2,11 +2,38 @@ import { defineManifest } from "@crxjs/vite-plugin";
 
 import pkg from "./package.json" with { type: "json" };
 
+const CHROME_VERSION_PART_MAX = 65536;
+
+const EXTENSION_VERSION_PATTERN =
+  /^(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-[0-9A-Za-z-]+\.(?<prerelease>0|[1-9]\d*))?$/;
+
+function chromeExtensionVersion(semver: string): string {
+  const match = EXTENSION_VERSION_PATTERN.exec(semver);
+  if (!match?.groups) {
+    throw new Error(`Unsupported extension version: ${semver}`);
+  }
+
+  const parts = [
+    Number(match.groups.major),
+    Number(match.groups.minor),
+    Number(match.groups.patch),
+  ];
+  if (match.groups.prerelease !== undefined) {
+    parts.push(Number(match.groups.prerelease) + 1);
+  }
+  if (parts.some((part) => part > CHROME_VERSION_PART_MAX)) {
+    throw new Error(`Unsupported extension version: ${semver}`);
+  }
+
+  return parts.join(".");
+}
+
 export default defineManifest({
   manifest_version: 3,
   name: "Stay Key",
   description: pkg.description,
-  version: pkg.version,
+  version: chromeExtensionVersion(pkg.version),
+  version_name: pkg.version,
   icons: {
     "16": "icon16.png",
     "32": "icon32.png",
