@@ -25,17 +25,14 @@ export function RecoveryQuestionScreen() {
 
   const [question, setQuestion] = React.useState("");
   const [answer, setAnswer] = React.useState("");
-  const [confirm, setConfirm] = React.useState("");
   const [acceptedRisk, setAcceptedRisk] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
   const [pending, setPending] = React.useState(false);
 
   const answerTooShort = answer.length > 0 && answer.length < RECOVERY_ANSWER_MIN_LENGTH;
-  const mismatch = confirm.length > 0 && answer !== confirm;
   const canSubmit =
     question.trim().length > 0 &&
     answer.length >= RECOVERY_ANSWER_MIN_LENGTH &&
-    answer === confirm &&
     acceptedRisk &&
     !pending;
 
@@ -54,7 +51,6 @@ export function RecoveryQuestionScreen() {
         masterPassword,
         recoveryQuestion: question,
         recoveryAnswer: answer,
-        confirmRecoveryAnswer: confirm,
       });
       clearPendingMasterPassword();
       void setUnlockedSession({
@@ -75,21 +71,28 @@ export function RecoveryQuestionScreen() {
   return (
     <Screen>
       <BrandHeader />
-      <ScreenBody className="px-4 pt-7 pb-10">
-        <h2 className="text-title font-semibold text-foreground">设置安全提示问题</h2>
-        <p className="mt-2 text-sm leading-5 text-muted-foreground">
-          忘记主密码时，答对即可找回访问权限。请自己编写问题与答案。
-        </p>
+      <ScreenBody className="relative flex flex-col px-4 pt-7 pb-10">
+        <button
+          type="button"
+          className="mb-3 flex items-center gap-1 text-left text-title font-semibold text-foreground"
+          onClick={() => setScreen("master")}
+        >
+          <span aria-hidden className="text-lg leading-none">
+            ←
+          </span>
+          设置安全提示问题
+        </button>
 
-        <div className="mt-7 flex flex-col gap-5">
+        <div className="flex flex-col gap-5">
           <div>
-            <Label htmlFor="recovery-question">安全提示问题（请自己编写）</Label>
+            <Label htmlFor="recovery-question">提示问题</Label>
             <Textarea
               className="mt-2"
               id="recovery-question"
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
               rows={2}
+              placeholder="例如：我小学的名字叫什么？"
             />
           </div>
 
@@ -98,7 +101,7 @@ export function RecoveryQuestionScreen() {
             <Input
               className="mt-2"
               id="recovery-answer"
-              type="password"
+              type="text"
               autoComplete="off"
               value={answer}
               onChange={(event) => setAnswer(event.target.value)}
@@ -106,36 +109,17 @@ export function RecoveryQuestionScreen() {
             />
             <p className="mt-2 min-h-4 text-micro leading-4 text-muted-foreground">
               {answerTooShort ? (
-                <span className="text-destructive">答案长度不足，请加长后再试。</span>
+                <span className="text-destructive">答案至少 8 个字符</span>
               ) : (
-                "答案请当作第二密码保管；过短或常见词会显著降低安全性。"
+                "答案至少 8 个字符，请妥善保管"
               )}
-            </p>
-          </div>
-
-          <div>
-            <Label htmlFor="recovery-answer-confirm">确认答案</Label>
-            <Input
-              className="mt-2"
-              id="recovery-answer-confirm"
-              type="password"
-              autoComplete="off"
-              value={confirm}
-              onChange={(event) => setConfirm(event.target.value)}
-              aria-invalid={mismatch || undefined}
-            />
-            <p className="mt-2 min-h-4 text-micro leading-4 text-destructive">
-              {mismatch ? "两次输入的答案不一致。" : ""}
             </p>
           </div>
         </div>
 
-        <div className="mt-5 rounded-xl bg-secondary px-3 py-2.5">
-          <p className="text-meta font-medium text-secondary-foreground">
-            请注意：提示问题答案是第二把钥匙
-          </p>
-          <p className="mt-1 text-micro leading-4 text-muted-foreground">
-            答对即可解锁保险库。攻击者若猜到或获知该答案，即可打开保险库。请使用足够长、难以猜测的答案，并勿与公开信息相同。
+        <div className="mt-5 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2.5">
+          <p className="text-meta leading-5 text-foreground">
+            ⚠️ 警告：该答案是您的第二把密钥，请妥善保存
           </p>
         </div>
 
@@ -145,14 +129,16 @@ export function RecoveryQuestionScreen() {
             onCheckedChange={(checked) => setAcceptedRisk(checked === true)}
             className="mt-0.5"
           />
-          <span>我已了解上述风险，并将妥善保管答案</span>
+          <span>我已了解风险</span>
         </label>
 
         {error ? <p className="mt-3 text-micro text-destructive">{error}</p> : null}
 
-        <Button className="mt-4 w-full" disabled={!canSubmit} onClick={() => void handleComplete()}>
-          {pending ? "创建中…" : "完成设置"}
-        </Button>
+        <div className="mt-auto pt-8">
+          <Button className="w-full" disabled={!canSubmit} onClick={() => void handleComplete()}>
+            {pending ? "创建中…" : "完成设置"}
+          </Button>
+        </div>
       </ScreenBody>
     </Screen>
   );

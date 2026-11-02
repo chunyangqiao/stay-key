@@ -13,6 +13,8 @@ export type MasterPinOtpProps = {
   "aria-label"?: string;
   /** Enter when all 6 filled (user keypress only; never fires on fill alone). */
   onEnterSubmit?: () => void;
+  /** Fires once when input reaches MASTER_PIN_LENGTH via typing/paste. */
+  onComplete?: (value: string) => void;
   className?: string;
 };
 
@@ -41,10 +43,26 @@ export function MasterPinOtp({
   autoFocus = false,
   "aria-label": ariaLabel = "主密码",
   onEnterSubmit,
+  onComplete,
   className,
 }: MasterPinOtpProps) {
   const inputsRef = React.useRef<Array<HTMLInputElement | null>>([]);
+  const onCompleteRef = React.useRef<MasterPinOtpProps["onComplete"]>(onComplete);
+  const lastCompletedRef = React.useRef<string | undefined>(undefined);
   const sanitized = sanitizeMasterPinInput(value);
+
+  React.useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  React.useEffect(() => {
+    if (sanitized.length === 0) {
+      lastCompletedRef.current = undefined;
+      if (autoFocus && !disabled) {
+        requestAnimationFrame(() => focusIndex(0));
+      }
+    }
+  }, [sanitized, autoFocus, disabled]);
 
   function focusIndex(index: number) {
     const clamped = Math.max(0, Math.min(MASTER_PIN_LENGTH - 1, index));
@@ -56,6 +74,14 @@ export function MasterPinOtp({
   function commit(next: string, focusAt?: number) {
     const cleaned = sanitizeMasterPinInput(next);
     onChange(cleaned);
+    if (
+      cleaned.length === MASTER_PIN_LENGTH &&
+      cleaned !== lastCompletedRef.current &&
+      onCompleteRef.current
+    ) {
+      lastCompletedRef.current = cleaned;
+      onCompleteRef.current(cleaned);
+    }
     if (focusAt !== undefined) {
       requestAnimationFrame(() => focusIndex(focusAt));
     }
@@ -147,7 +173,7 @@ export function MasterPinOtp({
       role="group"
       aria-label={ariaLabel}
       aria-invalid={invalid || undefined}
-      className={cn("grid grid-cols-6 gap-2", className)}
+      className={cn("grid grid-cols-6 gap-2.5", className)}
     >
       {Array.from({ length: MASTER_PIN_LENGTH }, (_, index) => (
         <input
@@ -156,7 +182,7 @@ export function MasterPinOtp({
             inputsRef.current[index] = node;
           }}
           id={index === 0 ? id : `${id}-${index}`}
-          type="password"
+          type="text"
           inputMode="numeric"
           autoComplete="one-time-code"
           pattern="[0-9]*"
@@ -169,7 +195,7 @@ export function MasterPinOtp({
           className={cn(
             "h-12 w-full min-w-0 appearance-none rounded-lg border bg-background text-center text-lg font-medium tabular-nums text-foreground transition-colors",
             "focus-visible:outline-2 focus-visible:outline-offset-[-1px]",
-            "disabled:bg-secondary disabled:text-muted-foreground",
+            "disabled:cursor-not-allowed disabled:opacity-45 disabled:bg-secondary disabled:text-muted-foreground",
             invalid
               ? "border-destructive focus-visible:border-destructive focus-visible:outline-destructive"
               : "border-input focus-visible:border-primary focus-visible:outline-ring",

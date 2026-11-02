@@ -24,6 +24,7 @@ export type AppScreen =
   | "settings-general"
   | "settings-shortcuts"
   | "settings-security"
+  | "settings-clipboard"
   | "settings-about";
 
 type SessionStore = {

@@ -1,18 +1,14 @@
+import { ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 import { DEFAULT_CLIPBOARD_CLEAR_MS, DEFAULT_IDLE_LOCK_MS } from "@/shared/constants";
-import { CLIPBOARD_CLEAR_OPTIONS_MS, IDLE_LOCK_OPTIONS_MS } from "@/shared/settings-options";
+import { IDLE_LOCK_OPTIONS_MS } from "@/shared/settings-options";
 import { useSessionStore } from "@/shared/session-store";
 import { updateVaultSettings } from "@/shared/vault";
 
 import { AppHeader } from "../components/app-header";
 import { Screen, ScreenBody, SectionLabel } from "../components/screen";
-import { SettingsOptionList, SettingsSegmented } from "./settings-shell";
-
-const CLIPBOARD_SEGMENTED = CLIPBOARD_CLEAR_OPTIONS_MS.map((option) => ({
-  value: option.value,
-  label: `${Math.round(option.value / 1000)} 秒`,
-}));
+import { SettingsOptionList } from "./settings-shell";
 
 export function SettingsSecurityScreen() {
   const setScreen = useSessionStore((state) => state.setScreen);
@@ -22,18 +18,17 @@ export function SettingsSecurityScreen() {
 
   const idleLockMs = vault?.settings.idleLockMs ?? DEFAULT_IDLE_LOCK_MS;
   const clipboardClearMs = vault?.settings.clipboardClearMs ?? DEFAULT_CLIPBOARD_CLEAR_MS;
+  const clipboardSeconds = Math.round(clipboardClearMs / 1000);
 
-  const patch = async (partial: { idleLockMs?: number; clipboardClearMs?: number }) => {
+  const patchIdle = async (nextMs: number) => {
     try {
-      const next = await updateVaultSettings(partial);
+      const next = await updateVaultSettings({ idleLockMs: nextMs });
       if (!next) {
         toast.message("保存失败");
         return;
       }
       applyVault(next);
-      if (partial.idleLockMs !== undefined) {
-        await touchActivity();
-      }
+      await touchActivity();
     } catch {
       toast.message("保存失败");
     }
@@ -52,19 +47,21 @@ export function SettingsSecurityScreen() {
           name="空闲自动锁定"
           options={IDLE_LOCK_OPTIONS_MS}
           value={idleLockMs}
-          onChange={(next) => void patch({ idleLockMs: next })}
+          onChange={(next) => void patchIdle(next)}
         />
-        <SectionLabel className="mt-6">剪贴板自动清除</SectionLabel>
-        <p className="mt-1 text-meta text-muted-foreground">
-          复制账号或密码后，短时清空剪贴板中的敏感内容。
-        </p>
-        <SettingsSegmented
-          className="mt-3"
-          name="剪贴板自动清除"
-          options={CLIPBOARD_SEGMENTED}
-          value={clipboardClearMs}
-          onChange={(next) => void patch({ clipboardClearMs: next })}
-        />
+
+        <SectionLabel className="mt-6">剪贴板</SectionLabel>
+        <button
+          type="button"
+          className="mt-3 flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-border bg-background px-3 text-left transition-colors hover:bg-foreground/[0.03] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+          onClick={() => setScreen("settings-clipboard")}
+        >
+          <span className="text-sm font-medium text-foreground">复制后清除剪贴板</span>
+          <span className="flex items-center gap-1 text-meta text-muted-foreground">
+            {clipboardSeconds}秒
+            <ChevronRight className="size-4" aria-hidden />
+          </span>
+        </button>
       </ScreenBody>
     </Screen>
   );

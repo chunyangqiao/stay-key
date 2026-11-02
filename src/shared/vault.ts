@@ -73,7 +73,6 @@ export async function createVault(input: {
   masterPassword: string;
   recoveryQuestion: string;
   recoveryAnswer: string;
-  confirmRecoveryAnswer: string;
 }): Promise<{ dek: CryptoKey; vault: PersistedVault }> {
   masterPinSchema.parse(input.masterPassword);
 
@@ -83,9 +82,6 @@ export async function createVault(input: {
   }
 
   recoveryAnswerSchema.parse(input.recoveryAnswer);
-  if (input.recoveryAnswer !== input.confirmRecoveryAnswer) {
-    throw new Error("两次输入的答案不一致。");
-  }
 
   const normalizedQuestion = question.toLowerCase();
   const normalizedAnswer = input.recoveryAnswer.trim().toLowerCase();

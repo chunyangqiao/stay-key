@@ -1,7 +1,6 @@
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { isValidMasterPin } from "@/shared/constants";
 import { setPendingMasterPassword } from "@/shared/onboarding-draft";
 import { useSessionStore } from "@/shared/session-store";
@@ -28,37 +27,36 @@ export function MasterPasswordScreen() {
   return (
     <Screen>
       <BrandHeader />
-      <ScreenBody className="px-4 pt-7 pb-8">
+      <ScreenBody className="relative flex flex-col px-4 pt-7 pb-8">
         <h2 className="text-title font-semibold text-foreground">设置主密码</h2>
         <p className="mt-2 text-sm leading-5 text-muted-foreground">
-          用于解锁本机保险库。请设置 6 位数字。
+          用于解锁本机保险库，请设置 6 位数字
         </p>
 
-        <div className="mt-7">
-          <Label htmlFor="master-password">主密码</Label>
-          <MasterPinOtp
-            className="mt-2"
-            id="master-password"
-            value={password}
-            onChange={(next) => {
-              setPassword(next);
-              if (error) {
-                setError(undefined);
-              }
-            }}
-            invalid={Boolean(error)}
-            aria-label="主密码"
-            autoFocus
-            onEnterSubmit={handleNext}
-          />
-          <p className="mt-2 min-h-5 text-micro text-muted-foreground">
-            {error ? <span className="text-destructive">{error}</span> : "请输入 6 位数字"}
-          </p>
-        </div>
+        <MasterPinOtp
+          className="mt-9"
+          id="master-password"
+          value={password}
+          onChange={(next) => {
+            setPassword(next);
+            if (error) {
+              setError(undefined);
+            }
+          }}
+          invalid={Boolean(error)}
+          aria-label="主密码"
+          autoFocus
+          onEnterSubmit={handleNext}
+        />
+        <p className="mt-2 min-h-5 text-micro text-muted-foreground">
+          {error ? <span className="text-destructive">{error}</span> : null}
+        </p>
 
-        <Button className="mt-4 w-full" disabled={!isValidMasterPin(password)} onClick={handleNext}>
-          下一步
-        </Button>
+        <div className="mt-auto pt-8">
+          <Button className="w-full" disabled={!isValidMasterPin(password)} onClick={handleNext}>
+            下一步
+          </Button>
+        </div>
       </ScreenBody>
     </Screen>
   );

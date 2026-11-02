@@ -1,13 +1,20 @@
 import * as React from "react";
-import { Copy, KeyRound, Pencil, Search, Settings } from "lucide-react";
+import { Copy, Inbox, KeyRound, Pencil, Search, Settings } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { readActiveTabHost, readActiveTabInfo, type ActiveTabInfo } from "@/shared/active-tab";
 import { copySecret } from "@/shared/clipboard";
-import { DEFAULT_CLIPBOARD_CLEAR_MS, DEFAULT_IDLE_LOCK_MS } from "@/shared/constants";
+import { DEFAULT_CLIPBOARD_CLEAR_MS } from "@/shared/constants";
 import { createEntryId, parseTags, searchEntries } from "@/shared/entries";
 import { filterEntriesForHost } from "@/shared/host-match";
 import { maskAccount } from "@/shared/mask";
@@ -86,8 +93,6 @@ export function HomeScreen() {
   );
   const visible = React.useMemo(() => searchEntries(entries, query), [entries, query]);
   const clipboardClearMs = vault?.settings.clipboardClearMs ?? DEFAULT_CLIPBOARD_CLEAR_MS;
-  const idleLockMinutes = Math.round((vault?.settings.idleLockMs ?? DEFAULT_IDLE_LOCK_MS) / 60_000);
-
   const openCreate = (prefillHost?: string) => {
     setDraft({ ...emptyDraft(), host: prefillHost ?? "" });
     setError(undefined);
@@ -347,11 +352,8 @@ export function HomeScreen() {
               ))}
             </ul>
           ) : (
-            <div className="flex items-center justify-between gap-3 px-4 py-2">
-              <p className="text-meta text-muted-foreground">本站暂无保存的账号</p>
-              <Button type="button" size="row" onClick={() => openCreate(tabInfo.host)}>
-                保存到本站
-              </Button>
+            <div className="px-4 py-2.5">
+              <p className="text-meta text-muted-foreground">暂无匹配条目</p>
             </div>
           )}
         </section>
@@ -384,16 +386,17 @@ export function HomeScreen() {
         </div>
 
         {visible.length === 0 ? (
-          <div className="flex min-h-56 flex-col items-center justify-center gap-3 px-4 py-10 text-center">
-            <p className="text-meta text-muted-foreground">
-              {entries.length === 0 ? "暂无条目" : "没有匹配的条目"}
-            </p>
-            {entries.length === 0 ? (
-              <Button type="button" variant="secondary" onClick={() => openCreate()}>
-                新建
-              </Button>
-            ) : null}
-          </div>
+          <Empty className="min-h-56 border-0">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Inbox />
+              </EmptyMedia>
+              <EmptyTitle>{entries.length === 0 ? "保险库为空" : "没有匹配的条目"}</EmptyTitle>
+              <EmptyDescription>
+                {entries.length === 0 ? "点底部「保存密码」添加第一条" : "暂无匹配条目"}
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <ul>
             {visible.map((entry) => (
@@ -446,9 +449,10 @@ export function HomeScreen() {
         )}
       </ScreenBody>
 
-      <ScreenFooter>
-        <span>剪贴板 {Math.round(clipboardClearMs / 1000)} 秒后清除</span>
-        <span>空闲 {idleLockMinutes} 分钟锁定</span>
+      <ScreenFooter className="justify-center border-t border-border px-4 py-3">
+        <Button type="button" className="w-full" onClick={() => openCreate()}>
+          保存密码
+        </Button>
       </ScreenFooter>
     </Screen>
   );

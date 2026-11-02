@@ -3,7 +3,6 @@ import * as React from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useSessionStore } from "@/shared/session-store";
 import { unlockWithRecoveryAnswer } from "@/shared/vault";
 
@@ -74,27 +73,31 @@ export function RecoverScreen() {
   return (
     <Screen>
       <BrandHeader />
-      <ScreenBody className="px-4 pt-7 pb-8">
+      <ScreenBody className="px-4 pt-9 pb-8 text-center">
         <h2 className="text-title font-semibold text-foreground">找回访问权限</h2>
-        <p className="mt-2 text-sm leading-5 text-muted-foreground">你的安全提示问题</p>
+        <p className="mt-2 text-sm leading-5 text-muted-foreground">
+          正确回答将保留您的保险库条目，仅重置 PIN 码
+        </p>
 
-        <div className="mt-5 rounded-xl bg-secondary px-3.5 py-3">
-          <p className="text-row font-medium text-secondary-foreground">{question}</p>
-          <p className="mt-1 text-micro leading-4 text-muted-foreground">
-            请输入你设置时的答案。答案按掩码输入。
-          </p>
-        </div>
+        <div className="mt-7 text-left">
+          <div className="rounded-xl bg-secondary px-3.5 py-3">
+            <p className="text-row font-medium text-secondary-foreground">{question}</p>
+          </div>
 
-        <div className="mt-5">
-          <Label htmlFor="recovery-unlock-answer">答案</Label>
           <Input
-            className="mt-2"
+            className="mt-3"
             id="recovery-unlock-answer"
-            type="password"
+            type="text"
             autoComplete="off"
+            placeholder="输入答案"
             value={answer}
             disabled={coolingDown || pending}
-            onChange={(event) => setAnswer(event.target.value)}
+            onChange={(event) => {
+              setAnswer(event.target.value);
+              if (error) {
+                setError(undefined);
+              }
+            }}
             onKeyDown={(event) => {
               if (event.key === "Enter" && answer && !coolingDown) {
                 void handleVerify();
@@ -107,7 +110,7 @@ export function RecoverScreen() {
         </div>
 
         {coolingDown ? (
-          <Alert variant="destructive" className="mt-1">
+          <Alert variant="destructive" className="mt-1 text-left">
             <AlertTitle>尝试次数已用尽</AlertTitle>
             <AlertDescription>
               请{formatCooldown(cooldownUntil)}后再试。冷却结束后可重新验证；本机保险库不会被清空。
@@ -123,7 +126,7 @@ export function RecoverScreen() {
           {pending ? "验证中…" : "验证并继续"}
         </Button>
 
-        <Button variant="ghost" className="mt-2 w-full" onClick={() => setScreen("unlock")}>
+        <Button variant="link" className="mt-7" onClick={() => setScreen("unlock")}>
           返回解锁
         </Button>
       </ScreenBody>

@@ -1,6 +1,6 @@
 {
   "name": "stay-key",
-  "version": "0.1.0",
+  "version": "0.7.1",
   "description": "Save accounts, passwords, and other secrets on this computer. Generate strong random passwords when you need one",
   "private": true,
   "scripts": {
