@@ -87,7 +87,7 @@ export function SettingsEntryFileSection() {
     busyRef.current = true;
     setBusy(true);
     try {
-      await writeEntryFile(contents, () => sessionIsCurrent(stamp));
+      await writeEntryFile(contents, () => sessionIsCurrent(stamp), window);
     } catch (error) {
       if (!isPickerAbort(error)) {
         toast.message("保存失败");
