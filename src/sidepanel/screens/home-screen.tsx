@@ -1,14 +1,14 @@
 import * as React from "react";
 import {
   ArrowLeft,
-  Copy,
+  ChevronRight,
   Eye,
   EyeOff,
   Globe,
   Inbox,
   KeyRound,
   Lock,
-  Pencil,
+  Plus,
   Search,
   Settings,
   Tag,
@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -31,7 +32,7 @@ import { readActiveTabHost, readActiveTabInfo, type ActiveTabInfo } from "@/shar
 import { copySecret } from "@/shared/clipboard";
 import { DEFAULT_CLIPBOARD_CLEAR_MS } from "@/shared/constants";
 import { createEntryId, parseTags, searchEntries } from "@/shared/entries";
-import { filterEntriesForHost } from "@/shared/host-match";
+import { filterEntriesForHost, hostsMatch } from "@/shared/host-match";
 import { maskAccount } from "@/shared/mask";
 import { useSessionStore } from "@/shared/session-store";
 import { saveVaultPayload } from "@/shared/vault";
@@ -58,6 +59,48 @@ const emptyDraft = (): Draft => ({
   tags: "",
 });
 
+type ListSegment = "all" | "current" | "other";
+
+type SiteGroup = {
+  hostKey: string;
+  host: string;
+  entries: VaultEntry[];
+  tags: string[];
+};
+
+function aggregateByHost(entries: VaultEntry[]): SiteGroup[] {
+  const map = new Map<string, SiteGroup>();
+  for (const entry of entries) {
+    const host = entry.host.trim();
+    const hostKey = host.toLowerCase();
+    if (!hostKey) {
+      continue;
+    }
+    const existing = map.get(hostKey);
+    if (existing) {
+      existing.entries.push(entry);
+      for (const tag of entry.tags) {
+        if (!existing.tags.includes(tag)) {
+          existing.tags.push(tag);
+        }
+      }
+    } else {
+      map.set(hostKey, {
+        hostKey,
+        host,
+        entries: [entry],
+        tags: [...entry.tags],
+      });
+    }
+  }
+  return [...map.values()].sort((a, b) => a.host.localeCompare(b.host, "zh-CN"));
+}
+
+function siteLetter(host: string): string {
+  const ch = host.trim().charAt(0);
+  return ch ? ch.toUpperCase() : "?";
+}
+
 export function HomeScreen() {
   const lock = useSessionStore((state) => state.lock);
   const setScreen = useSessionStore((state) => state.setScreen);
@@ -72,6 +115,8 @@ export function HomeScreen() {
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
   const [showPassword, setShowPassword] = React.useState(false);
+  const [listSegment, setListSegment] = React.useState<ListSegment>("all");
+  const [expandedHostKey, setExpandedHostKey] = React.useState<string | undefined>();
   const [tabInfo, setTabInfo] = React.useState<ActiveTabInfo | undefined>();
 
   const refreshTab = React.useCallback(() => {
@@ -104,12 +149,45 @@ export function HomeScreen() {
 
   const entries = payload?.entries ?? [];
   const activeHost = tabInfo?.kind === "host" ? tabInfo.host : undefined;
-  const siteEntries = React.useMemo(
-    () => (activeHost ? filterEntriesForHost(entries, activeHost) : []),
-    [entries, activeHost],
-  );
-  const visible = React.useMemo(() => searchEntries(entries, query), [entries, query]);
+  const hasCurrentSite = Boolean(activeHost);
+  const searched = React.useMemo(() => searchEntries(entries, query), [entries, query]);
+  const segmentCounts = React.useMemo(() => {
+    const current = activeHost ? filterEntriesForHost(searched, activeHost).length : 0;
+    return {
+      all: searched.length,
+      current,
+      other: searched.length - current,
+    };
+  }, [searched, activeHost]);
+  const visibleGroups = React.useMemo(() => {
+    let scoped = searched;
+    if (listSegment === "current") {
+      scoped = activeHost ? filterEntriesForHost(searched, activeHost) : [];
+    } else if (listSegment === "other") {
+      scoped = activeHost
+        ? searched.filter((entry) => !hostsMatch(entry.host, activeHost))
+        : searched;
+    }
+    return aggregateByHost(scoped);
+  }, [searched, listSegment, activeHost]);
   const clipboardClearMs = vault?.settings.clipboardClearMs ?? DEFAULT_CLIPBOARD_CLEAR_MS;
+
+  React.useEffect(() => {
+    if (listSegment === "current" && !hasCurrentSite) {
+      setListSegment("all");
+    }
+  }, [listSegment, hasCurrentSite]);
+
+  React.useEffect(() => {
+    if (!expandedHostKey) {
+      return;
+    }
+    const stillVisible = visibleGroups.some((group) => group.hostKey === expandedHostKey);
+    if (!stillVisible) {
+      setExpandedHostKey(undefined);
+    }
+  }, [visibleGroups, expandedHostKey]);
+
   const openCreate = (prefillHost?: string) => {
     setDraft({ ...emptyDraft(), host: prefillHost ?? "" });
     setError(undefined);
@@ -399,76 +477,26 @@ export function HomeScreen() {
               type="button"
               variant="ghost"
               size="icon"
+              aria-label="锁定"
+              onClick={() => void lock()}
+            >
+              <Lock />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               aria-label="设置"
               onClick={() => setScreen("settings")}
             >
               <Settings />
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => void lock()}>
-              锁定
-            </Button>
           </>
         }
       />
 
-      {tabInfo === undefined ? null : tabInfo.kind === "none" ? (
-        <div className="shrink-0 border-b border-border px-4 py-2.5">
-          <p className="text-meta text-muted-foreground">当前页无站点</p>
-        </div>
-      ) : (
-        <section aria-labelledby="current-site" className="shrink-0 border-b border-border bg-band">
-          <div className="flex items-baseline justify-between gap-3 px-4 pt-3">
-            <h2
-              id="current-site"
-              className="min-w-0 truncate text-lg font-semibold tracking-[-0.01em] text-foreground"
-            >
-              {tabInfo.host}
-            </h2>
-            <span className="shrink-0 text-micro text-muted-foreground">当前站点</span>
-          </div>
-          {siteEntries.length > 0 ? (
-            <ul className="mt-1 pb-1">
-              {siteEntries.map((entry) => (
-                <li key={entry.id} className="flex items-center gap-1.5 px-4 py-1.5">
-                  <div className="flex min-w-0 flex-1 items-center gap-1.5">
-                    <button
-                      type="button"
-                      className="min-h-8 min-w-0 truncate text-left text-meta text-foreground hover:underline"
-                      onClick={() => openEdit(entry)}
-                    >
-                      {maskAccount(entry.username)}
-                    </button>
-                    <EntryTags tags={entry.tags} />
-                  </div>
-                  <Button
-                    type="button"
-                    size="row"
-                    variant="quiet"
-                    onClick={() => void onCopy("账号", entry.username)}
-                  >
-                    复制账号
-                  </Button>
-                  <Button
-                    type="button"
-                    size="row"
-                    variant="quiet"
-                    onClick={() => void onCopy("密码", entry.password)}
-                  >
-                    复制密码
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="px-4 py-2.5">
-              <p className="text-meta text-muted-foreground">暂无匹配条目</p>
-            </div>
-          )}
-        </section>
-      )}
-
-      <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-3">
-        <div className="relative min-w-0 flex-1">
+      <div className="flex shrink-0 flex-col gap-3 border-b border-border px-4 py-3">
+        <div className="relative min-w-0">
           <Search
             aria-hidden
             className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
@@ -482,18 +510,48 @@ export function HomeScreen() {
             className="pl-8"
           />
         </div>
-        <Button type="button" variant="secondary" onClick={() => openCreate()}>
-          新建
-        </Button>
+
+        <div className="flex gap-2" role="radiogroup" aria-label="列表筛选">
+          {(
+            [
+              { id: "all", label: "全部", count: segmentCounts.all, disabled: false },
+              {
+                id: "current",
+                label: "当前站",
+                count: segmentCounts.current,
+                disabled: !hasCurrentSite,
+              },
+              { id: "other", label: "其他", count: segmentCounts.other, disabled: false },
+            ] as const
+          ).map((segment) => {
+            const selected = listSegment === segment.id;
+            return (
+              <button
+                key={segment.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                disabled={segment.disabled}
+                onClick={() => setListSegment(segment.id)}
+                className={cn(
+                  "inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium transition-colors",
+                  "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
+                  segment.disabled && "cursor-not-allowed opacity-40",
+                  selected
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-background text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <span className="truncate">{segment.label}</span>
+                <span className="tabular-nums">{segment.count}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <ScreenBody>
-        <div className="flex items-baseline justify-between px-4 pt-4 pb-1.5">
-          <h2 className="text-micro font-medium text-muted-foreground">全部条目</h2>
-          <span className="text-micro tabular-nums text-muted-foreground">{entries.length} 条</span>
-        </div>
-
-        {visible.length === 0 ? (
+        {visibleGroups.length === 0 ? (
           <Empty className="min-h-56 border-0">
             <EmptyHeader>
               <EmptyMedia variant="icon">
@@ -507,61 +565,102 @@ export function HomeScreen() {
           </Empty>
         ) : (
           <ul>
-            {visible.map((entry) => (
-              <li key={entry.id} className="border-b border-border/70">
-                <div className="px-4 pt-2.5 pb-2">
+            {visibleGroups.map((group) => {
+              const expanded = expandedHostKey === group.hostKey;
+              return (
+                <li key={group.hostKey} className="border-b border-border/70">
                   <button
                     type="button"
-                    className="flex min-h-8 w-full items-center text-left text-row font-medium text-foreground hover:underline"
-                    onClick={() => openEdit(entry)}
-                    title={entry.host}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left"
+                    aria-expanded={expanded}
+                    onClick={() =>
+                      setExpandedHostKey((prev) =>
+                        prev === group.hostKey ? undefined : group.hostKey,
+                      )
+                    }
                   >
-                    <span className="min-w-0 truncate">{entry.host}</span>
+                    <span
+                      className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-sm font-semibold text-foreground"
+                      aria-hidden
+                    >
+                      {siteLetter(group.host)}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-row font-medium text-foreground">
+                        {group.host}
+                      </span>
+                      <span className="mt-0.5 flex min-w-0 items-center gap-1.5">
+                        <span className="shrink-0 text-meta text-muted-foreground">
+                          {group.entries.length} 个账号
+                        </span>
+                        <EntryTags tags={group.tags} />
+                      </span>
+                    </span>
+                    <ChevronRight
+                      className={cn(
+                        "size-4 shrink-0 text-muted-foreground transition-transform",
+                        expanded && "rotate-90",
+                      )}
+                      aria-hidden
+                    />
                   </button>
-                  <div className="mt-0.5 flex items-center gap-1">
-                    <div className="flex min-w-0 flex-1 items-center gap-1.5">
-                      <p className="min-w-0 truncate text-meta text-muted-foreground">
-                        {maskAccount(entry.username)}
-                      </p>
-                      <EntryTags tags={entry.tags} />
-                    </div>
-                    <Button
-                      type="button"
-                      size="row"
-                      variant="quiet"
-                      onClick={() => void onCopy("账号", entry.username)}
-                    >
-                      <Copy />
-                      复制账号
-                    </Button>
-                    <Button
-                      type="button"
-                      size="row"
-                      variant="quiet"
-                      onClick={() => void onCopy("密码", entry.password)}
-                    >
-                      <KeyRound />
-                      复制密码
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      aria-label="编辑"
-                      onClick={() => openEdit(entry)}
-                    >
-                      <Pencil />
-                    </Button>
-                  </div>
-                </div>
-              </li>
-            ))}
+
+                  {expanded ? (
+                    <ul className="space-y-2 px-4 pb-3">
+                      {group.entries.map((entry) => (
+                        <li
+                          key={entry.id}
+                          className="rounded-xl border border-border bg-card px-3 py-2.5 shadow-sm"
+                        >
+                          <div className="flex min-w-0 items-center gap-1.5">
+                            <p className="min-w-0 truncate text-row font-medium text-foreground">
+                              {maskAccount(entry.username)}
+                            </p>
+                            <EntryTags tags={entry.tags} />
+                          </div>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-meta">
+                            <button
+                              type="button"
+                              className="text-primary hover:underline"
+                              onClick={() => void onCopy("账号", entry.username)}
+                            >
+                              复制账号
+                            </button>
+                            <span className="text-border" aria-hidden>
+                              ·
+                            </span>
+                            <button
+                              type="button"
+                              className="text-primary hover:underline"
+                              onClick={() => void onCopy("密码", entry.password)}
+                            >
+                              复制密码
+                            </button>
+                            <span className="text-border" aria-hidden>
+                              ·
+                            </span>
+                            <button
+                              type="button"
+                              className="text-primary hover:underline"
+                              onClick={() => openEdit(entry)}
+                            >
+                              编辑
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
         )}
       </ScreenBody>
 
       <ScreenFooter className="justify-center border-t border-border px-4 py-3">
-        <Button type="button" className="w-full" onClick={() => openCreate()}>
+        <Button type="button" size="lg" className="w-full" onClick={() => openCreate()}>
+          <Plus />
           保存密码
         </Button>
       </ScreenFooter>
