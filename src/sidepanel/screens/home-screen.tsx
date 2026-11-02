@@ -180,7 +180,7 @@ export function HomeScreen() {
     vault?.settings.currentSiteSegmentEnabled ?? DEFAULT_CURRENT_SITE_SEGMENT_ENABLED;
 
   React.useEffect(() => {
-    if (!currentSiteSegmentEnabled && listSegment !== "all") {
+    if (!currentSiteSegmentEnabled && listSegment === "current") {
       setListSegment("all");
       return;
     }
@@ -522,45 +522,47 @@ export function HomeScreen() {
           />
         </div>
 
-        {currentSiteSegmentEnabled ? (
-          <div className="flex gap-2" role="radiogroup" aria-label="列表筛选">
-            {(
-              [
-                { id: "all", label: "全部", count: segmentCounts.all, disabled: false },
-                {
-                  id: "current",
-                  label: "当前站",
-                  count: segmentCounts.current,
-                  disabled: !hasCurrentSite,
-                },
-                { id: "other", label: "其他", count: segmentCounts.other, disabled: false },
-              ] as const
-            ).map((segment) => {
-              const selected = listSegment === segment.id;
-              return (
-                <button
-                  key={segment.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  disabled={segment.disabled}
-                  onClick={() => setListSegment(segment.id)}
-                  className={cn(
-                    "inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium transition-colors",
-                    "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
-                    segment.disabled && "cursor-not-allowed opacity-40",
-                    selected
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border bg-background text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  <span className="truncate">{segment.label}</span>
-                  <span className="tabular-nums">{segment.count}</span>
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
+        <div className="flex gap-2" role="radiogroup" aria-label="列表筛选">
+          {(
+            [
+              { id: "all" as const, label: "全部", count: segmentCounts.all, disabled: false },
+              ...(currentSiteSegmentEnabled
+                ? [
+                    {
+                      id: "current" as const,
+                      label: "当前站",
+                      count: segmentCounts.current,
+                      disabled: !hasCurrentSite,
+                    },
+                  ]
+                : []),
+              { id: "other" as const, label: "其他", count: segmentCounts.other, disabled: false },
+            ] as const
+          ).map((segment) => {
+            const selected = listSegment === segment.id;
+            return (
+              <button
+                key={segment.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                disabled={segment.disabled}
+                onClick={() => setListSegment(segment.id)}
+                className={cn(
+                  "inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium transition-colors",
+                  "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
+                  segment.disabled && "cursor-not-allowed opacity-40",
+                  selected
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-background text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <span className="truncate">{segment.label}</span>
+                <span className="tabular-nums">{segment.count}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <ScreenBody>
