@@ -1,22 +1,20 @@
-import { sortEntries } from "./entries";
-
 import type { VaultEntry } from "../vault/vault-types";
 
 export const ENTRY_FILE_NAME = "stay-key-entries.json";
-export const ENTRY_FILE_VERSION = 1;
+const ENTRY_FILE_VERSION = 1;
 
 export const EXPORT_WARNING = "导出的文件包含明文密码。保存之后，锁定保险库不会加密这份文件。";
 
-export type EntryFileIssue = "invalid-json" | "unsupported-version" | "missing-fields" | "bad-tags";
+type EntryFileIssue = "invalid-json" | "unsupported-version" | "missing-fields" | "bad-tags";
 
-export type ParsedEntry = {
+type ParsedEntry = {
   host: string;
   username: string;
   password: string;
   tags: string[];
 };
 
-export type ParseEntryFileResult =
+type ParseEntryFileResult =
   | { ok: true; entries: ParsedEntry[] }
   | { ok: false; issue: EntryFileIssue };
 
@@ -64,7 +62,7 @@ export function importNoNewMessage(skipped: number): string {
 export function serializeEntryFile(entries: readonly VaultEntry[]): string {
   const file = {
     version: ENTRY_FILE_VERSION,
-    entries: sortEntries([...entries]).map((entry) => ({
+    entries: entries.map((entry) => ({
       host: entry.host,
       username: entry.username,
       password: entry.password,
@@ -153,30 +151,28 @@ function parseEntry(
     return { ok: false, issue: "missing-fields" };
   }
 
-  const trimmedHost = host.trim();
-  const trimmedUsername = username.trim();
-  if (trimmedHost.length === 0 || trimmedUsername.length === 0 || password.length === 0) {
+  if (host.length === 0 || username.length === 0 || password.length === 0) {
     return { ok: false, issue: "missing-fields" };
   }
 
   if ("tags" in value && value.tags !== undefined) {
-    const tags = normalizeTags(value.tags);
+    const tags = readTags(value.tags);
     if (!tags) {
       return { ok: false, issue: "bad-tags" };
     }
     return {
       ok: true,
-      entry: { host: trimmedHost, username: trimmedUsername, password, tags },
+      entry: { host, username, password, tags },
     };
   }
 
   return {
     ok: true,
-    entry: { host: trimmedHost, username: trimmedUsername, password, tags: [] },
+    entry: { host, username, password, tags: [] },
   };
 }
 
-function normalizeTags(value: unknown): string[] | undefined {
+function readTags(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) {
     return undefined;
   }
@@ -185,21 +181,13 @@ function normalizeTags(value: unknown): string[] | undefined {
     if (typeof tag !== "string") {
       return undefined;
     }
-    const trimmed = tag.trim();
-    if (trimmed.length > 0) {
-      tags.push(trimmed);
-    }
+    tags.push(tag);
   }
   return tags;
 }
 
 function entryIdentity(entry: ComparableEntry): string {
-  return JSON.stringify([
-    entry.host.trim(),
-    entry.username.trim(),
-    entry.password,
-    normalizeTags(entry.tags) ?? [],
-  ]);
+  return JSON.stringify([entry.host, entry.username, entry.password, entry.tags]);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

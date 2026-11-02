@@ -43,8 +43,8 @@ describe("serializeEntryFile", () => {
     expect(JSON.parse(text)).toEqual({
       version: 1,
       entries: [
-        { host: "a.example", username: "amy", password: "a", tags: ["work"] },
         { host: "b.example", username: "zoe", password: "b", tags: [] },
+        { host: "a.example", username: "amy", password: "a", tags: ["work"] },
       ],
     });
     const first = JSON.parse(text).entries[0] as Record<string, unknown>;
@@ -77,7 +77,7 @@ describe("parseEntryFile", () => {
     );
     expect(parsed).toEqual({
       ok: true,
-      entries: [{ host: "a.example", username: "amy", password: "  p  ", tags: [] }],
+      entries: [{ host: " a.example ", username: " amy ", password: "  p  ", tags: [] }],
     });
   });
 
@@ -108,13 +108,15 @@ describe("parseEntryFile", () => {
     ).toEqual({ ok: false, issue: "missing-fields" });
   });
 
-  it("drops blank tags and does not split on commas", () => {
+  it("keeps tag strings and does not split on commas", () => {
     const parsed = parseEntryFile(
       '{ "version": 1, "entries": [{ "host": "a.example", "username": "amy", "password": " ", "tags": ["  ", "a, b", "work"] }] }',
     );
     expect(parsed).toEqual({
       ok: true,
-      entries: [{ host: "a.example", username: "amy", password: " ", tags: ["a, b", "work"] }],
+      entries: [
+        { host: "a.example", username: "amy", password: " ", tags: ["  ", "a, b", "work"] },
+      ],
     });
   });
 });
@@ -122,21 +124,31 @@ describe("parseEntryFile", () => {
 describe("planImport", () => {
   const now = "2026-11-02T00:00:00.000Z";
 
-  it("skips an exact match on both sides and keeps the stored entry", () => {
+  it("appends a file entry that differs only by spaces and keeps the file's strings", () => {
     const existing = [
-      saved({ host: " github.com ", username: " Amy ", password: "secret", tags: [" work "] }),
+      saved({ host: "github.com", username: "Amy", password: "secret", tags: ["work"] }),
     ];
     const parsed = parseEntryFile(
-      '{ "version": 1, "entries": [{ "host": "github.com", "username": "Amy", "password": "secret", "tags": ["work", ""] }] }',
+      '{ "version": 1, "entries": [{ "host": " github.com ", "username": " Amy ", "password": "secret", "tags": [" work ", ""] }] }',
     );
     if (!parsed.ok) {
       throw new Error("expected a valid file");
     }
 
     const plan = planImport(existing, parsed.entries, now, ids());
-    expect(plan.added).toBe(0);
-    expect(plan.skipped).toBe(1);
-    expect(plan.entries).toEqual(existing);
+    expect(plan.added).toBe(1);
+    expect(plan.skipped).toBe(0);
+    expect(plan.entries).toEqual([
+      existing[0],
+      {
+        id: "new-1",
+        host: " github.com ",
+        username: " Amy ",
+        password: "secret",
+        tags: [" work ", ""],
+        updatedAt: now,
+      },
+    ]);
   });
 
   it("appends a changed password or tag order and skips a later duplicate in the file", () => {

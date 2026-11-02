@@ -59,8 +59,7 @@ export async function writeEntryFile(
   }
   const picker = pickerWindow();
   if (typeof picker.showSaveFilePicker !== "function") {
-    downloadEntryFile(contents);
-    return stillCurrent();
+    throw new Error("Save picker is unavailable");
   }
 
   let handle: FileSystemFileHandle;
@@ -73,8 +72,7 @@ export async function writeEntryFile(
     if (isPickerAbort(error) || !stillCurrent()) {
       return false;
     }
-    downloadEntryFile(contents);
-    return true;
+    throw error;
   }
 
   if (!stillCurrent()) {
@@ -104,18 +102,6 @@ export async function writeEntryFile(
   }
 }
 
-function downloadEntryFile(contents: string): void {
-  const blob = new Blob([contents], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = ENTRY_FILE_NAME;
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
-}
-
 function readWithInput(): Promise<string> {
   return new Promise((resolve, reject) => {
     const input = document.createElement("input");
@@ -125,21 +111,19 @@ function readWithInput(): Promise<string> {
       input.remove();
       reject(error);
     };
-    input.addEventListener("change", () => {
+    input.addEventListener("change", async () => {
       const file = input.files?.[0];
       if (!file) {
         fail(abortError());
         return;
       }
-      void file.text().then(
-        (text) => {
-          input.remove();
-          resolve(text);
-        },
-        (error: unknown) => {
-          fail(error);
-        },
-      );
+      try {
+        const text = await file.text();
+        input.remove();
+        resolve(text);
+      } catch (error) {
+        fail(error);
+      }
     });
     input.addEventListener("cancel", () => {
       fail(abortError());

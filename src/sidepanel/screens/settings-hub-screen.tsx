@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router";
-
 import { ChevronRight, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";

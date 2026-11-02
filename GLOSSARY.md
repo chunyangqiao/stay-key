@@ -33,5 +33,5 @@ Writing the vault's entries out as an entry file.
 _Avoid_: backup, sync
 
 **Import**:
-A merge of an entry file into the vault. An exact entry is skipped, every other entry is added, and entries missing from the file stay.
+A merge of an entry file into the vault, written only after the user confirms it. An exact entry is skipped, every other entry is added, and entries missing from the file stay.
 _Avoid_: restore, replace, sync
