@@ -1,6 +1,24 @@
 import { describe, expect, it } from "vitest";
 
-import { writeEntryFile } from "../src/sidepanel/entry-file-client";
+import { readEntryFile, writeEntryFile } from "../src/sidepanel/entry-file-client";
+
+describe("readEntryFile", () => {
+  it("rejects when the open picker is unavailable", async () => {
+    const hadWindow = "window" in globalThis;
+    const previousWindow = globalThis.window;
+    globalThis.window = {} as Window & typeof globalThis;
+
+    try {
+      await expect(readEntryFile()).rejects.toThrow("Open picker is unavailable");
+    } finally {
+      if (hadWindow) {
+        globalThis.window = previousWindow;
+      } else {
+        Reflect.deleteProperty(globalThis, "window");
+      }
+    }
+  });
+});
 
 describe("writeEntryFile", () => {
   it("creates no entry file when the vault locks before the write finishes", async () => {

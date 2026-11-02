@@ -26,6 +26,18 @@ function ids(): () => string {
 }
 
 describe("serializeEntryFile", () => {
+  it("omits an entry whose host, username, and password are all empty", () => {
+    const text = serializeEntryFile([
+      saved({ host: "", username: "", password: "", tags: ["work"] }),
+      saved({ host: "a.example", username: "", password: "" }),
+    ]);
+
+    expect(JSON.parse(text)).toEqual({
+      version: 1,
+      entries: [{ host: "a.example", username: "", password: "", tags: [] }],
+    });
+  });
+
   it("writes version 1 entries in list order with a trailing newline", () => {
     const text = serializeEntryFile([
       saved({ id: "2", host: "b.example", username: "zoe", password: "b" }),
@@ -81,7 +93,7 @@ describe("parseEntryFile", () => {
     });
   });
 
-  it("rejects a string version, bad tags, and empty secrets without keeping earlier rows", () => {
+  it("rejects a string version, bad tags, and a non-string secret", () => {
     expect(parseEntryFile('{ "version": "1", "entries": [] }')).toEqual({
       ok: false,
       issue: "unsupported-version",
@@ -91,11 +103,6 @@ describe("parseEntryFile", () => {
       ok: false,
       issue: "invalid-json",
     });
-    expect(
-      parseEntryFile(
-        '{ "version": 1, "entries": [{ "host": "a.example", "username": "amy", "password": "p" }, { "host": "", "username": "amy", "password": "p" }] }',
-      ),
-    ).toEqual({ ok: false, issue: "missing-fields" });
     expect(
       parseEntryFile(
         '{ "version": 1, "entries": [{ "host": "a.example", "username": "amy", "password": "p", "tags": "work" }] }',
@@ -116,6 +123,27 @@ describe("parseEntryFile", () => {
       ok: true,
       entries: [
         { host: "a.example", username: "amy", password: " ", tags: ["  ", "a, b", "work"] },
+      ],
+    });
+  });
+
+  it("skips an entry whose host, username, and password are all empty", () => {
+    const parsed = parseEntryFile(
+      JSON.stringify({
+        version: 1,
+        entries: [
+          { host: "a.example", username: "amy", password: "p" },
+          { host: "", username: "", password: "", tags: ["work"] },
+          { host: "", username: "", password: "p" },
+        ],
+      }),
+    );
+
+    expect(parsed).toEqual({
+      ok: true,
+      entries: [
+        { host: "a.example", username: "amy", password: "p", tags: [] },
+        { host: "", username: "", password: "p", tags: [] },
       ],
     });
   });

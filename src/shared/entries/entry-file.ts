@@ -62,12 +62,14 @@ export function importNoNewMessage(skipped: number): string {
 export function serializeEntryFile(entries: readonly VaultEntry[]): string {
   const file = {
     version: ENTRY_FILE_VERSION,
-    entries: entries.map((entry) => ({
-      host: entry.host,
-      username: entry.username,
-      password: entry.password,
-      tags: entry.tags,
-    })),
+    entries: entries
+      .filter((entry) => !isBlankEntry(entry.host, entry.username, entry.password))
+      .map((entry) => ({
+        host: entry.host,
+        username: entry.username,
+        password: entry.password,
+        tags: entry.tags,
+      })),
   };
   return `${JSON.stringify(file, null, 2)}\n`;
 }
@@ -96,6 +98,9 @@ export function parseEntryFile(raw: string): ParseEntryFileResult {
     const parsedEntry = parseEntry(item);
     if (!parsedEntry.ok) {
       return parsedEntry;
+    }
+    if (!parsedEntry.entry) {
+      continue;
     }
     entries.push(parsedEntry.entry);
   }
@@ -139,7 +144,7 @@ export function planImport(
 
 function parseEntry(
   value: unknown,
-): { ok: true; entry: ParsedEntry } | { ok: false; issue: EntryFileIssue } {
+): { ok: true; entry: ParsedEntry | undefined } | { ok: false; issue: EntryFileIssue } {
   if (!isRecord(value)) {
     return { ok: false, issue: "missing-fields" };
   }
@@ -151,8 +156,8 @@ function parseEntry(
     return { ok: false, issue: "missing-fields" };
   }
 
-  if (host.length === 0 || username.length === 0 || password.length === 0) {
-    return { ok: false, issue: "missing-fields" };
+  if (isBlankEntry(host, username, password)) {
+    return { ok: true, entry: undefined };
   }
 
   if ("tags" in value && value.tags !== undefined) {
@@ -184,6 +189,10 @@ function readTags(value: unknown): string[] | undefined {
     tags.push(tag);
   }
   return tags;
+}
+
+function isBlankEntry(host: string, username: string, password: string): boolean {
+  return host.length === 0 && username.length === 0 && password.length === 0;
 }
 
 function entryIdentity(entry: ComparableEntry): string {

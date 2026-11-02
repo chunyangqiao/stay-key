@@ -56,22 +56,15 @@ export function isPickerAbort(error: unknown): boolean {
 export async function readEntryFile(): Promise<string> {
   const picker = pickerWindow();
   if (typeof picker.showOpenFilePicker !== "function") {
-    return readWithInput();
+    throw new Error("Open picker is unavailable");
   }
 
-  try {
-    const [handle] = await picker.showOpenFilePicker({
-      multiple: false,
-      types: [JSON_PICKER_TYPE],
-    });
-    const file = await handle.getFile();
-    return file.text();
-  } catch (error) {
-    if (isPickerAbort(error)) {
-      throw error;
-    }
-    return readWithInput();
-  }
+  const [handle] = await picker.showOpenFilePicker({
+    multiple: false,
+    types: [JSON_PICKER_TYPE],
+  });
+  const file = await handle.getFile();
+  return file.text();
 }
 
 export async function writeEntryFile(
@@ -146,39 +139,4 @@ export async function writeEntryFile(
     }
     throw error;
   }
-}
-
-function readWithInput(): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "application/json,.json";
-    const fail = (error: unknown) => {
-      input.remove();
-      reject(error);
-    };
-    input.addEventListener("change", async () => {
-      const file = input.files?.[0];
-      if (!file) {
-        fail(abortError());
-        return;
-      }
-      try {
-        const text = await file.text();
-        input.remove();
-        resolve(text);
-      } catch (error) {
-        fail(error);
-      }
-    });
-    input.addEventListener("cancel", () => {
-      fail(abortError());
-    });
-    document.body.append(input);
-    input.click();
-  });
-}
-
-function abortError(): DOMException {
-  return new DOMException("The user aborted a request.", "AbortError");
 }
