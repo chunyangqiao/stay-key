@@ -9,11 +9,11 @@
   
 ## Linting and formatting  
   
-- After making code changes, run `pnpm exec oxlint --fix src`, then run `pnpm exec oxfmt src`.  
-- Before finishing, run `pnpm exec oxlint --deny-warnings --format=agent src`.  
-- `pnpm lint` checks `src/` with `oxlint` and `oxfmt --check`. `pnpm lint:fix` runs `oxlint --fix src` and `oxfmt --write src`.  
-- `pnpm fmt` runs `oxfmt --write src`. `pnpm fmt:check` runs `oxfmt --check src`.  
-- The pre-commit hook runs `pnpm exec lint-staged`, which applies `oxlint --fix` and `oxfmt --write` to staged files under `src/`.  
+- After making code changes, run `pnpm exec oxlint --fix src tests`, then run `pnpm exec oxfmt src tests`.  
+- Before finishing, run `pnpm exec oxlint --deny-warnings --format=agent src tests`.  
+- `pnpm lint` checks `src/` and `tests/` with `oxlint` and `oxfmt --check`. `pnpm lint:fix` runs `oxlint --fix src tests` and `oxfmt --write src tests`.  
+- `pnpm fmt` runs `oxfmt --write src tests`. `pnpm fmt:check` runs `oxfmt --check src tests`.  
+- The pre-commit hook runs `pnpm exec lint-staged`, which applies `oxlint --fix` and `oxfmt --write` to staged files under `src/` and `tests/`.  
   
 ## Environment Requirements  
   
@@ -28,6 +28,7 @@ Stay Key is a Manifest V3 Chrome extension. Vite and CRXJS build these contexts:
 - `src/background` is the service worker for session and messaging.
 - `src/index.css` is the shared Tailwind CSS entry imported by UI contexts.
 - `src/shared` holds modules used by more than one context. It is grouped into `crypto`, `session`, `vault`, `entries`, `chrome`, `settings`, and `onboarding`. `constants`, `bytes`, `error-message`, and `utils` stay at the `src/shared` root.
+- `tests/` at the repo root holds every Vitest file. Name a file `*.test.ts` and import the module under test with a relative path into `src/`. Vite does not bundle `tests/`.
 
 Sidepanel does not import `src/background`. Put a module that more than one context imports in `src/shared`.
 

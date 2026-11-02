@@ -6,10 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint src && oxfmt --check src",
-    "lint:fix": "oxlint --fix src && oxfmt --write src",
-    "fmt": "oxfmt --write src",
-    "fmt:check": "oxfmt --check src",
+    "lint": "oxlint src tests && oxfmt --check src tests",
+    "lint:fix": "oxlint --fix src tests && oxfmt --write src tests",
+    "fmt": "oxfmt --write src tests",
+    "fmt:check": "oxfmt --check src tests",
     "test": "vitest run",
     "prepare": "husky"
   },
@@ -65,7 +65,7 @@
     "zustand": "^5.0.16"
   },
   "lint-staged": {
-    "src/**/*.{js,jsx,ts,tsx,mjs,cjs}": [
+    "{src,tests}/**/*.{js,jsx,ts,tsx,mjs,cjs}": [
       "oxlint --fix",
       "oxfmt --write"
     ],

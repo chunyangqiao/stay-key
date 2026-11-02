@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { parseEntryFile, planImport, serializeEntryFile } from "./entry-file";
+import { parseEntryFile, planImport, serializeEntryFile } from "../src/shared/entries/entry-file";
 
-import type { VaultEntry } from "../vault/vault-types";
+import type { VaultEntry } from "../src/shared/vault/vault-types";
 
 function saved(
   overrides: Partial<VaultEntry> & Pick<VaultEntry, "host" | "username" | "password">,
