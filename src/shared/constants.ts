@@ -12,6 +12,12 @@ export const COOLDOWN_MS = 30 * 60 * 1000;
 export const DEFAULT_IDLE_LOCK_MS = 2 * 60 * 1000;
 export const DEFAULT_CLIPBOARD_CLEAR_MS = 30 * 1000;
 
+/** Home list username masking (settings「列表掩码」). */
+export const DEFAULT_LIST_MASK_ENABLED = true;
+
+/** Home 当前站 / 其他 segments (settings「当前站点块」). */
+export const DEFAULT_CURRENT_SITE_SEGMENT_ENABLED = true;
+
 /** PBKDF2-SHA-256 iteration count for master and recovery key derivation. */
 export const PBKDF2_ITERATIONS = 600_000;
 

@@ -1,4 +1,5 @@
 import { ChevronRight, type LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -136,6 +137,53 @@ export function SettingsSegmented<T extends string | number>({
           </button>
         );
       })}
+    </div>
+  );
+}
+
+export function SettingsGroup({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("overflow-hidden rounded-xl border border-border bg-background", className)}>
+      {children}
+    </div>
+  );
+}
+
+export function SettingsNavRow({
+  label,
+  value,
+  onClick,
+}: {
+  label: string;
+  value?: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-11 w-full items-center justify-between gap-3 border-t border-border px-3 text-left transition-colors first:border-t-0 hover:bg-foreground/[0.03] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+    >
+      <span className="text-sm font-medium text-foreground">{label}</span>
+      <span className="flex min-w-0 items-center gap-1 text-meta text-muted-foreground">
+        {value ? <span className="truncate">{value}</span> : null}
+        <ChevronRight className="size-4 shrink-0" aria-hidden />
+      </span>
+    </button>
+  );
+}
+
+export function SettingsStaticRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex h-11 w-full items-center justify-between gap-3 border-t border-border px-3 first:border-t-0">
+      <span className="text-sm font-medium text-foreground">{label}</span>
+      <span className="text-meta text-muted-foreground">{value}</span>
     </div>
   );
 }

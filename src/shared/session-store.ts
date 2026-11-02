@@ -25,7 +25,8 @@ export type AppScreen =
   | "settings-shortcuts"
   | "settings-security"
   | "settings-clipboard"
-  | "settings-about";
+  | "settings-about"
+  | "settings-recovery";
 
 type SessionStore = {
   hydrated: boolean;

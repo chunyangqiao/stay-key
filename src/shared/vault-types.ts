@@ -6,6 +6,10 @@ export type CipherBlob = {
 export type VaultSettings = {
   idleLockMs: number;
   clipboardClearMs: number;
+  /** When false, home list shows usernames unmasked. Default true. */
+  listMaskEnabled?: boolean;
+  /** When false, home hides 当前站 / 其他 segments. Default true. */
+  currentSiteSegmentEnabled?: boolean;
 };
 
 export type VaultEntry = {

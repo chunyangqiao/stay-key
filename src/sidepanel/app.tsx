@@ -8,6 +8,7 @@ import { RecoverScreen } from "./screens/recover-screen";
 import { RecoveryQuestionScreen } from "./screens/recovery-question-screen";
 import { ResetMasterPasswordScreen } from "./screens/reset-master-password-screen";
 import { SettingsAboutScreen } from "./screens/settings-about-screen";
+import { SettingsRecoveryScreen } from "./screens/settings-recovery-screen";
 import { SettingsClipboardScreen } from "./screens/settings-clipboard-screen";
 import { SettingsGeneralScreen } from "./screens/settings-general-screen";
 import { SettingsHubScreen } from "./screens/settings-hub-screen";
@@ -66,6 +67,7 @@ export function SidePanel() {
         {screen === "settings-security" ? <SettingsSecurityScreen /> : null}
         {screen === "settings-clipboard" ? <SettingsClipboardScreen /> : null}
         {screen === "settings-about" ? <SettingsAboutScreen /> : null}
+        {screen === "settings-recovery" ? <SettingsRecoveryScreen /> : null}
       </div>
     </main>
   );

@@ -4,7 +4,9 @@ import { fromBase64, toBase64, decodeUtf8, encodeUtf8 } from "./bytes";
 import {
   COOLDOWN_MS,
   DEFAULT_CLIPBOARD_CLEAR_MS,
+  DEFAULT_CURRENT_SITE_SEGMENT_ENABLED,
   DEFAULT_IDLE_LOCK_MS,
+  DEFAULT_LIST_MASK_ENABLED,
   isValidMasterPin,
   MAX_FAILED_ATTEMPTS,
   RECOVERY_ANSWER_MIN_LENGTH,
@@ -118,6 +120,8 @@ export async function createVault(input: {
     settings: {
       idleLockMs: DEFAULT_IDLE_LOCK_MS,
       clipboardClearMs: DEFAULT_CLIPBOARD_CLEAR_MS,
+      listMaskEnabled: DEFAULT_LIST_MASK_ENABLED,
+      currentSiteSegmentEnabled: DEFAULT_CURRENT_SITE_SEGMENT_ENABLED,
     },
   };
 
@@ -269,6 +273,44 @@ export async function resetMasterPassword(input: {
     wrappedDekByMaster: wrappedByMaster,
     masterFailCount: 0,
     masterCooldownUntil: undefined,
+  };
+  await writePersistedVault(next);
+  return next;
+}
+
+export async function updateRecoveryCredentials(input: {
+  dek: CryptoKey;
+  vault: PersistedVault;
+  recoveryQuestion: string;
+  recoveryAnswer: string;
+}): Promise<PersistedVault> {
+  const question = input.recoveryQuestion.trim();
+  if (question.length === 0) {
+    throw new Error("请填写安全提示问题。");
+  }
+
+  recoveryAnswerSchema.parse(input.recoveryAnswer);
+
+  const normalizedQuestion = question.toLowerCase();
+  const normalizedAnswer = input.recoveryAnswer.trim().toLowerCase();
+  if (
+    normalizedAnswer.length > 0 &&
+    (normalizedQuestion.includes(normalizedAnswer) || normalizedAnswer.includes(normalizedQuestion))
+  ) {
+    throw new Error("答案请勿与提示问题过于相似。");
+  }
+
+  const recoverySalt = createSalt();
+  const recoveryKek = await deriveAesKey(input.recoveryAnswer, recoverySalt);
+  const wrappedByRecovery = blobToStored(await wrapDek(recoveryKek, input.dek));
+
+  const next: PersistedVault = {
+    ...input.vault,
+    recoverySalt: toBase64(recoverySalt),
+    recoveryQuestion: question,
+    wrappedDekByRecovery: wrappedByRecovery,
+    recoveryFailCount: 0,
+    recoveryCooldownUntil: undefined,
   };
   await writePersistedVault(next);
   return next;

@@ -30,7 +30,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { readActiveTabHost, readActiveTabInfo, type ActiveTabInfo } from "@/shared/active-tab";
 import { copySecret } from "@/shared/clipboard";
-import { DEFAULT_CLIPBOARD_CLEAR_MS } from "@/shared/constants";
+import {
+  DEFAULT_CLIPBOARD_CLEAR_MS,
+  DEFAULT_CURRENT_SITE_SEGMENT_ENABLED,
+  DEFAULT_LIST_MASK_ENABLED,
+} from "@/shared/constants";
 import { createEntryId, parseTags, searchEntries } from "@/shared/entries";
 import { filterEntriesForHost, hostsMatch } from "@/shared/host-match";
 import { maskAccount } from "@/shared/mask";
@@ -171,12 +175,19 @@ export function HomeScreen() {
     return aggregateByHost(scoped);
   }, [searched, listSegment, activeHost]);
   const clipboardClearMs = vault?.settings.clipboardClearMs ?? DEFAULT_CLIPBOARD_CLEAR_MS;
+  const listMaskEnabled = vault?.settings.listMaskEnabled ?? DEFAULT_LIST_MASK_ENABLED;
+  const currentSiteSegmentEnabled =
+    vault?.settings.currentSiteSegmentEnabled ?? DEFAULT_CURRENT_SITE_SEGMENT_ENABLED;
 
   React.useEffect(() => {
+    if (!currentSiteSegmentEnabled && listSegment !== "all") {
+      setListSegment("all");
+      return;
+    }
     if (listSegment === "current" && !hasCurrentSite) {
       setListSegment("all");
     }
-  }, [listSegment, hasCurrentSite]);
+  }, [listSegment, hasCurrentSite, currentSiteSegmentEnabled]);
 
   React.useEffect(() => {
     if (!expandedHostKey) {
@@ -511,43 +522,45 @@ export function HomeScreen() {
           />
         </div>
 
-        <div className="flex gap-2" role="radiogroup" aria-label="列表筛选">
-          {(
-            [
-              { id: "all", label: "全部", count: segmentCounts.all, disabled: false },
-              {
-                id: "current",
-                label: "当前站",
-                count: segmentCounts.current,
-                disabled: !hasCurrentSite,
-              },
-              { id: "other", label: "其他", count: segmentCounts.other, disabled: false },
-            ] as const
-          ).map((segment) => {
-            const selected = listSegment === segment.id;
-            return (
-              <button
-                key={segment.id}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                disabled={segment.disabled}
-                onClick={() => setListSegment(segment.id)}
-                className={cn(
-                  "inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium transition-colors",
-                  "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
-                  segment.disabled && "cursor-not-allowed opacity-40",
-                  selected
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border bg-background text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <span className="truncate">{segment.label}</span>
-                <span className="tabular-nums">{segment.count}</span>
-              </button>
-            );
-          })}
-        </div>
+        {currentSiteSegmentEnabled ? (
+          <div className="flex gap-2" role="radiogroup" aria-label="列表筛选">
+            {(
+              [
+                { id: "all", label: "全部", count: segmentCounts.all, disabled: false },
+                {
+                  id: "current",
+                  label: "当前站",
+                  count: segmentCounts.current,
+                  disabled: !hasCurrentSite,
+                },
+                { id: "other", label: "其他", count: segmentCounts.other, disabled: false },
+              ] as const
+            ).map((segment) => {
+              const selected = listSegment === segment.id;
+              return (
+                <button
+                  key={segment.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  disabled={segment.disabled}
+                  onClick={() => setListSegment(segment.id)}
+                  className={cn(
+                    "inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium transition-colors",
+                    "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
+                    segment.disabled && "cursor-not-allowed opacity-40",
+                    selected
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border bg-background text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <span className="truncate">{segment.label}</span>
+                  <span className="tabular-nums">{segment.count}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
 
       <ScreenBody>
@@ -614,7 +627,7 @@ export function HomeScreen() {
                         >
                           <div className="flex min-w-0 items-center gap-1.5">
                             <p className="min-w-0 truncate text-row font-medium text-foreground">
-                              {maskAccount(entry.username)}
+                              {listMaskEnabled ? maskAccount(entry.username) : entry.username}
                             </p>
                             <EntryTags tags={entry.tags} />
                           </div>

@@ -36,7 +36,7 @@ export function SettingsClipboardScreen() {
 
   return (
     <Screen>
-      <AppHeader title="清除剪贴板" onBack={() => setScreen("settings-security")} />
+      <AppHeader title="清除剪贴板" onBack={() => setScreen("settings")} />
       <ScreenBody className="px-4 py-5">
         <p className="mb-3 text-sm text-muted-foreground">复制后自动清除的等待时间</p>
         <SettingsOptionList
