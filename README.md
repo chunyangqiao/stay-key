@@ -62,4 +62,4 @@ Report bugs and request features in [GitHub Issues](https://github.com/chunyangq
 
 ## License
 
-MIT. The license is declared in `package.json`.
+MIT. See [LICENSE](LICENSE).

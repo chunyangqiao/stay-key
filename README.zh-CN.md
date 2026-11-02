@@ -62,4 +62,4 @@ pnpm build
 
 ## 许可证
 
-MIT。许可证声明见 `package.json`。
+MIT。见 [LICENSE](LICENSE)。
