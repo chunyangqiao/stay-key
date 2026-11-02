@@ -130,6 +130,13 @@ export async function writeEntryFile(
       return false;
     }
     await writable.close();
+    if (!stillCurrent() && previous.length === 0) {
+      if (!canRemove(handle)) {
+        throw new Error("Save picker cannot remove an unfinished entry file");
+      }
+      await handle.remove();
+      return false;
+    }
     return true;
   } catch (error) {
     try {

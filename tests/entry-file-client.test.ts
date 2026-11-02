@@ -204,4 +204,43 @@ describe("writeEntryFile", () => {
     expect(wrote).toBe(false);
     expect(files.has(chosenPath)).toBe(false);
   });
+
+  it("creates no entry file when the vault locks while the export is being saved", async () => {
+    const chosenPath = "chosen-entries.json";
+    const files = new Map<string, string>();
+    let vaultLocked = false;
+
+    const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
+      async showSaveFilePicker() {
+        files.set(chosenPath, "");
+        return {
+          async getFile() {
+            return new File([files.get(chosenPath) ?? ""], chosenPath);
+          },
+          async createWritable() {
+            files.set(chosenPath, "");
+            let next = "";
+            return {
+              async write(data: string) {
+                next += data;
+              },
+              async close() {
+                files.set(chosenPath, next);
+                vaultLocked = true;
+              },
+              async abort() {
+                // Chrome does not restore bytes truncated by createWritable.
+              },
+            };
+          },
+          async remove() {
+            files.delete(chosenPath);
+          },
+        } as unknown as FileSystemFileHandle;
+      },
+    });
+
+    expect(wrote).toBe(false);
+    expect(files.has(chosenPath)).toBe(false);
+  });
 });
