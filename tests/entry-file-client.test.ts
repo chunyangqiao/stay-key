@@ -223,6 +223,82 @@ describe("writeEntryFile", () => {
     expect(files.has(chosenPath)).toBe(false);
   });
 
+  it("keeps an existing entry file's bytes when the vault locks while the export is being saved", async () => {
+    const chosenPath = "chosen-entries.json";
+    const previous = "previous-export\n";
+    const files = new Map<string, string>([[chosenPath, previous]]);
+    let vaultLocked = false;
+
+    const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
+      async showSaveFilePicker() {
+        return {
+          async getFile() {
+            return new File([files.get(chosenPath) ?? ""], chosenPath);
+          },
+          async createWritable() {
+            files.set(chosenPath, "");
+            let next = "";
+            return {
+              async write(data: string) {
+                next += data;
+              },
+              async close() {
+                files.set(chosenPath, next);
+                vaultLocked = true;
+              },
+              async abort() {},
+            };
+          },
+          async remove() {
+            files.delete(chosenPath);
+          },
+        } as unknown as FileSystemFileHandle;
+      },
+    });
+
+    expect(wrote).toBe(false);
+    expect(files.get(chosenPath)).toBe(previous);
+  });
+
+  it("restores an existing entry file when the export write fails", async () => {
+    const chosenPath = "chosen-entries.json";
+    const previous = "previous-export\n";
+    const files = new Map<string, string>([[chosenPath, previous]]);
+
+    await expect(
+      writeEntryFile('{"version":1,"entries":[]}\n', () => true, {
+        async showSaveFilePicker() {
+          return {
+            async getFile() {
+              return new File([files.get(chosenPath) ?? ""], chosenPath);
+            },
+            async createWritable() {
+              files.set(chosenPath, "");
+              let next = "";
+              return {
+                async write(data: string) {
+                  if (data !== previous) {
+                    throw new Error("disk full");
+                  }
+                  next += data;
+                },
+                async close() {
+                  files.set(chosenPath, next);
+                },
+                async abort() {},
+              };
+            },
+            async remove() {
+              files.delete(chosenPath);
+            },
+          } as unknown as FileSystemFileHandle;
+        },
+      }),
+    ).rejects.toThrow("disk full");
+
+    expect(files.get(chosenPath)).toBe(previous);
+  });
+
   it("creates no entry file when the vault locks while the export is being saved", async () => {
     const chosenPath = "chosen-entries.json";
     const files = new Map<string, string>();

@@ -117,17 +117,19 @@ export async function writeEntryFile(
         await discardEmptyFile(handle);
         return false;
       }
-      const restoring = await handle.createWritable();
-      await restoring.write(previous);
-      await restoring.close();
+      await restorePrevious(handle, previous);
       return false;
     }
     await writable.close();
-    if (!stillCurrent() && previous.length === 0) {
-      if (!canRemove(handle)) {
-        throw new Error("Save picker cannot remove an unfinished entry file");
+    if (!stillCurrent()) {
+      if (previous.length === 0) {
+        if (!canRemove(handle)) {
+          throw new Error("Save picker cannot remove an unfinished entry file");
+        }
+        await handle.remove();
+        return false;
       }
-      await handle.remove();
+      await restorePrevious(handle, previous);
       return false;
     }
     return true;
@@ -137,6 +139,17 @@ export async function writeEntryFile(
     } catch {
       // Report the write error. Abort is only here to avoid leaving a partial file.
     }
+    try {
+      await restorePrevious(handle, previous);
+    } catch {
+      // The caller still receives the write error.
+    }
     throw error;
   }
+}
+
+async function restorePrevious(handle: FileSystemFileHandle, previous: string): Promise<void> {
+  const restoring = await handle.createWritable();
+  await restoring.write(previous);
+  await restoring.close();
 }

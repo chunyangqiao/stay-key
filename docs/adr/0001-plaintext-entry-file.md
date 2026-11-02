@@ -4,4 +4,4 @@ Entries leave the vault as a plaintext JSON entry file so a person can batch-edi
 
 Considered options: an encrypted file only Stay Key can read; a CSV of the same fields.
 
-Consequences: the chosen file is a copy of passwords outside the vault. The user picks where it is saved. A host is the site string already stored on the entry, not a URL parsed into a hostname. If the vault locks before that write finishes, the export creates no file and the import leaves the vault unchanged.
+Consequences: the chosen file is a copy of passwords outside the vault. The user picks where it is saved. A host is the site string already stored on the entry, not a URL parsed into a hostname. Import ignores a leading BOM and fields outside that shape, and treats a missing tags field as no tags. If the vault locks before that write finishes, a new entry file is removed and an existing entry file is restored to the bytes from before the write. A failed write restores those same bytes. Once lock has started, the import leaves the vault unchanged.

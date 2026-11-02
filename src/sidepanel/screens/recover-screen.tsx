@@ -44,13 +44,15 @@ export function RecoverScreen() {
       if (result.ok) {
         setAnswer("");
         stageAppPath(panelPaths.reset);
-        void setUnlockedSession({
-          dek: result.dek,
-          vault: result.vault,
-          payload: result.payload,
-        }).catch(() => {
+        try {
+          await setUnlockedSession({
+            dek: result.dek,
+            vault: result.vault,
+            payload: result.payload,
+          });
+        } catch {
           clearStagedAppPath();
-        });
+        }
         return;
       }
 

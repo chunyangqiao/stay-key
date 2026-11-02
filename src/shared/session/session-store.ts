@@ -108,13 +108,13 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   },
 
   lock: async () => {
-    set((state) => ({ sessionEpoch: state.sessionEpoch + 1 }));
-    await clearUnlockedSession();
-    set({
+    set((state) => ({
+      sessionEpoch: state.sessionEpoch + 1,
       unlocked: false,
       dek: undefined,
       payload: undefined,
-    });
+    }));
+    await clearUnlockedSession();
   },
 
   touchActivity: async () => {
