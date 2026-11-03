@@ -30,7 +30,7 @@ Stay Key is a Manifest V3 Chrome extension. Vite and CRXJS build these contexts:
 - `src/shared` holds modules used by more than one context. It is grouped into `crypto`, `session`, `vault`, `entries`, `chrome`, `settings`, and `onboarding`. `constants`, `bytes`, `error-message`, and `utils` stay at the `src/shared` root.
 - `tests/` at the repo root holds every Vitest file. Name a file `*.test.ts` and import the module under test with a relative path into `src/`. Vite does not bundle `tests/`.
 
-Sidepanel does not import `src/background`. Put a module that more than one context imports in `src/shared`.
+Sidepanel does not import `src/background`. Put a module that more than one context imports in `src/shared`. Files under `src/` prefer the `@/` alias for project imports.
 
 ## User-State Safety  
   

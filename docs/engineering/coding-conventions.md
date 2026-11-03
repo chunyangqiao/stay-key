@@ -78,9 +78,6 @@ Separate import groups with a blank line. Use `import type` for a binding
 used only as a type, and put that group last. Read a React type from the
 namespace, such as `React.ReactNode`, instead of adding a type import.
 
-This repository has no TypeScript path aliases. Import a project file with a
-relative path.
-
 The paths below are illustrative. They only show how groups are separated.
 
 In sidepanel and background:
