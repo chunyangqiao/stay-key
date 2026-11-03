@@ -36,29 +36,10 @@ function isFileCreatedForThisSave(
   return previous.length === 0 && lastModified >= saveStartedAt;
 }
 
-async function discardEmptyFile(
-  handle: FileSystemFileHandle,
-  saveStartedAt: number,
-): Promise<void> {
-  const existing = await handle.getFile();
-  const previous = await existing.text();
-  if (!isFileCreatedForThisSave(previous, existing.lastModified, saveStartedAt)) {
-    return;
-  }
-  if (!canRemove(handle)) {
-    throw new Error("Save picker cannot remove an unfinished entry file");
-  }
-  await handle.remove();
-}
-
 function canRemove(
   handle: FileSystemFileHandle,
 ): handle is FileSystemFileHandle & { remove(): Promise<void> } {
   return "remove" in handle && typeof handle.remove === "function";
-}
-
-function pickerWindow(): PickerWindow {
-  return window;
 }
 
 export function isPickerAbort(error: unknown): boolean {
@@ -66,7 +47,7 @@ export function isPickerAbort(error: unknown): boolean {
 }
 
 export async function readEntryFile(): Promise<string> {
-  const picker = pickerWindow();
+  const picker: PickerWindow = window;
   if (typeof picker.showOpenFilePicker !== "function") {
     throw new Error("Open picker is unavailable");
   }
@@ -105,46 +86,29 @@ export async function writeEntryFile(
     throw error;
   }
 
+  const existing = await handle.getFile();
+  const previous = await existing.text();
   if (!stillCurrent()) {
-    await discardEmptyFile(handle, saveStartedAt);
+    await revertUnfinishedSave(handle, previous, existing.lastModified, saveStartedAt);
     return false;
   }
 
-  const existing = await handle.getFile();
-  const previous = await existing.text();
   const writable = await handle.createWritable();
   try {
     if (!stillCurrent()) {
-      // A file created for this save is stamped during the attempt. An older empty file already existed.
-      if (isFileCreatedForThisSave(previous, existing.lastModified, saveStartedAt)) {
-        await writable.abort();
-        await discardEmptyFile(handle, saveStartedAt);
-        return false;
-      }
-      await writable.write(previous);
-      await writable.close();
+      await writable.abort();
+      await revertUnfinishedSave(handle, previous, existing.lastModified, saveStartedAt);
       return false;
     }
     await writable.write(contents);
     if (!stillCurrent()) {
       await writable.abort();
-      if (isFileCreatedForThisSave(previous, existing.lastModified, saveStartedAt)) {
-        await discardEmptyFile(handle, saveStartedAt);
-        return false;
-      }
-      await restorePrevious(handle, previous);
+      await revertUnfinishedSave(handle, previous, existing.lastModified, saveStartedAt);
       return false;
     }
     await writable.close();
     if (!stillCurrent()) {
-      if (isFileCreatedForThisSave(previous, existing.lastModified, saveStartedAt)) {
-        if (!canRemove(handle)) {
-          throw new Error("Save picker cannot remove an unfinished entry file");
-        }
-        await handle.remove();
-        return false;
-      }
-      await restorePrevious(handle, previous);
+      await revertUnfinishedSave(handle, previous, existing.lastModified, saveStartedAt);
       return false;
     }
     return true;
@@ -157,6 +121,22 @@ export async function writeEntryFile(
     await restorePrevious(handle, previous);
     throw error;
   }
+}
+
+async function revertUnfinishedSave(
+  handle: FileSystemFileHandle,
+  previous: string,
+  lastModified: number,
+  saveStartedAt: number,
+): Promise<void> {
+  if (isFileCreatedForThisSave(previous, lastModified, saveStartedAt)) {
+    if (!canRemove(handle)) {
+      throw new Error("Save picker cannot remove an unfinished entry file");
+    }
+    await handle.remove();
+    return;
+  }
+  await restorePrevious(handle, previous);
 }
 
 async function restorePrevious(handle: FileSystemFileHandle, previous: string): Promise<void> {

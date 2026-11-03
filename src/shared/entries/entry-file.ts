@@ -37,12 +37,12 @@ export function entryFileIssueMessage(issue: EntryFileIssue): string {
   }
 }
 
-export function importConfirmMessage(added: number, skipped: number): string {
-  return `将新增 ${added} 条条目，跳过 ${skipped} 条完全相同的条目。不会覆盖或删除已有条目。`;
+export function importConfirmMessage(plan: ImportPlan): string {
+  return `将新增 ${plan.added} 条条目，跳过 ${plan.skipped} 条完全相同的条目。不会覆盖或删除已有条目。`;
 }
 
-export function importSuccessMessage(added: number, skipped: number): string {
-  return `已新增 ${added} 条，跳过 ${skipped} 条。`;
+export function importSuccessMessage(plan: ImportPlan): string {
+  return `已新增 ${plan.added} 条，跳过 ${plan.skipped} 条。`;
 }
 
 export function importNoNewMessage(skipped: number): string {

@@ -35,101 +35,101 @@ export function SettingsEntryFileSection() {
     }
   }, [unlocked]);
 
-  async function startImport() {
+  async function withBusy(action: () => Promise<void>): Promise<void> {
     if (busyRef.current) {
       return;
     }
-    const stamp = sessionStamp();
     busyRef.current = true;
     setBusy(true);
     try {
-      const text = await readEntryFile();
-      if (!sessionIsCurrent(stamp)) {
-        return;
-      }
-      const parsed = parseEntryFile(text);
-      if (!parsed.ok) {
-        toast.message(entryFileIssueMessage(parsed.issue));
-        return;
-      }
-      const existing = useSessionStore.getState().payload?.entries ?? [];
-      const plan = planImport(existing, parsed.entries, new Date().toISOString(), createEntryId);
-      if (!sessionIsCurrent(stamp)) {
-        return;
-      }
-      if (plan.added === 0) {
-        toast.message(importNoNewMessage(plan.skipped));
-        return;
-      }
-      setDialog({ kind: "import", plan });
-    } catch (error) {
-      if (!isPickerAbort(error)) {
-        toast.message("保存失败");
-      }
+      await action();
     } finally {
       busyRef.current = false;
       setBusy(false);
     }
+  }
+
+  async function startImport() {
+    await withBusy(async () => {
+      const stamp = sessionStamp();
+      try {
+        const text = await readEntryFile();
+        if (!sessionIsCurrent(stamp)) {
+          return;
+        }
+        const parsed = parseEntryFile(text);
+        if (!parsed.ok) {
+          toast.message(entryFileIssueMessage(parsed.issue));
+          return;
+        }
+        const existing = useSessionStore.getState().payload?.entries ?? [];
+        const plan = planImport(existing, parsed.entries, new Date().toISOString(), createEntryId);
+        if (!sessionIsCurrent(stamp)) {
+          return;
+        }
+        if (plan.added === 0) {
+          toast.message(importNoNewMessage(plan.skipped));
+          return;
+        }
+        setDialog({ kind: "import", plan });
+      } catch (error) {
+        if (!isPickerAbort(error)) {
+          toast.message("保存失败");
+        }
+      }
+    });
   }
 
   async function confirmExport() {
-    if (busyRef.current) {
-      return;
-    }
-    const stamp = sessionStamp();
-    const payload = useSessionStore.getState().payload;
-    if (!sessionIsCurrent(stamp) || !payload) {
-      setDialog(undefined);
-      return;
-    }
-    const contents = serializeEntryFile(payload.entries);
-    busyRef.current = true;
-    setBusy(true);
-    try {
-      await writeEntryFile(contents, () => sessionIsCurrent(stamp), window);
-    } catch (error) {
-      if (!isPickerAbort(error)) {
-        toast.message("保存失败");
-      }
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-      setDialog(undefined);
-    }
-  }
-
-  async function confirmImport() {
-    if (busyRef.current || dialog?.kind !== "import") {
-      return;
-    }
-    const stamp = sessionStamp();
-    const { dek, vault } = useSessionStore.getState();
-    if (!sessionIsCurrent(stamp) || !dek || !vault) {
-      setDialog(undefined);
-      return;
-    }
-    const plan = dialog.plan;
-    busyRef.current = true;
-    setBusy(true);
-    try {
-      const nextPayload = { entries: plan.entries };
-      const nextVault = await saveVaultPayload(dek, vault, nextPayload, () =>
-        sessionIsCurrent(stamp),
-      );
-      if (!nextVault || !sessionIsCurrent(stamp)) {
+    await withBusy(async () => {
+      const stamp = sessionStamp();
+      const payload = useSessionStore.getState().payload;
+      if (!sessionIsCurrent(stamp) || !payload) {
         setDialog(undefined);
         return;
       }
-      useSessionStore.getState().applyPayload(nextPayload, nextVault);
-      toast.message(importSuccessMessage(plan.added, plan.skipped));
-      setDialog(undefined);
-    } catch {
-      toast.message("保存失败");
-      setDialog(undefined);
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
+      const contents = serializeEntryFile(payload.entries);
+      try {
+        await writeEntryFile(contents, () => sessionIsCurrent(stamp), window);
+      } catch (error) {
+        if (!isPickerAbort(error)) {
+          toast.message("保存失败");
+        }
+      } finally {
+        setDialog(undefined);
+      }
+    });
+  }
+
+  async function confirmImport() {
+    if (dialog?.kind !== "import") {
+      return;
     }
+    const plan = dialog.plan;
+    await withBusy(async () => {
+      const stamp = sessionStamp();
+      const { dek, vault } = useSessionStore.getState();
+      if (!sessionIsCurrent(stamp) || !dek || !vault) {
+        setDialog(undefined);
+        return;
+      }
+      try {
+        const nextPayload = { entries: plan.entries };
+        const nextVault = await saveVaultPayload(dek, vault, nextPayload, () =>
+          sessionIsCurrent(stamp),
+        );
+        if (!nextVault || !sessionIsCurrent(stamp)) {
+          setDialog(undefined);
+          return;
+        }
+        useSessionStore.getState().applyPayload(nextPayload, nextVault);
+        toast.message(importSuccessMessage(plan));
+        setDialog(undefined);
+      } catch {
+        toast.message("保存失败");
+        setDialog(undefined);
+      }
+    });
   }
 
   return (
@@ -164,7 +164,7 @@ export function SettingsEntryFileSection() {
       {dialog?.kind === "import" ? (
         <ConfirmDialog
           title="导入条目"
-          body={importConfirmMessage(dialog.plan.added, dialog.plan.skipped)}
+          body={importConfirmMessage(dialog.plan)}
           confirmLabel="导入"
           busy={busy}
           onCancel={() => setDialog(undefined)}

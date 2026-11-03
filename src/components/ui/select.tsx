@@ -140,7 +140,7 @@ export function SelectSeparator({ className, ...props }: SelectPrimitive.Separat
   );
 }
 
-export function SelectScrollUpButton({
+function SelectScrollUpButton({
   className,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.ScrollUpArrow>) {

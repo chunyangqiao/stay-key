@@ -20,6 +20,51 @@ describe("readEntryFile", () => {
   });
 });
 
+type SaveHandleOptions = {
+  lastModified?: number;
+  onWritable?: () => void;
+  onWrite?: (data: string) => void;
+  onClose?: () => void;
+};
+
+function saveHandle(
+  files: Map<string, string>,
+  path: string,
+  options: SaveHandleOptions = {},
+): FileSystemFileHandle {
+  return {
+    async getFile() {
+      return new File(
+        [files.get(path) ?? ""],
+        path,
+        options.lastModified === undefined ? undefined : { lastModified: options.lastModified },
+      );
+    },
+    async createWritable() {
+      // Chrome truncates the chosen file when the writable opens.
+      files.set(path, "");
+      options.onWritable?.();
+      let next = "";
+      return {
+        async write(data: string) {
+          options.onWrite?.(data);
+          next += data;
+        },
+        async close() {
+          files.set(path, next);
+          options.onClose?.();
+        },
+        async abort() {
+          // Chrome does not restore bytes truncated by createWritable.
+        },
+      };
+    },
+    async remove() {
+      files.delete(path);
+    },
+  } as unknown as FileSystemFileHandle;
+}
+
 describe("writeEntryFile", () => {
   it("creates no entry file when the vault locks before the write finishes", async () => {
     const chosenPath = "chosen-entries.json";
@@ -31,29 +76,7 @@ describe("writeEntryFile", () => {
         // The save picker creates the chosen file before it resolves.
         files.set(chosenPath, "");
         vaultLocked = true;
-        return {
-          async getFile() {
-            return new File([files.get(chosenPath) ?? ""], chosenPath);
-          },
-          async createWritable() {
-            files.set(chosenPath, "");
-            let next = "";
-            return {
-              async write(data: string) {
-                next += data;
-              },
-              async close() {
-                files.set(chosenPath, next);
-              },
-              async abort() {
-                // Chrome does not restore bytes truncated by createWritable.
-              },
-            };
-          },
-          async remove() {
-            files.delete(chosenPath);
-          },
-        } as unknown as FileSystemFileHandle;
+        return saveHandle(files, chosenPath);
       },
     });
 
@@ -69,31 +92,11 @@ describe("writeEntryFile", () => {
 
     const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
       async showSaveFilePicker() {
-        return {
-          async getFile() {
-            return new File([files.get(chosenPath) ?? ""], chosenPath);
-          },
-          async createWritable() {
-            // Chrome truncates the chosen file when the writable opens.
-            files.set(chosenPath, "");
+        return saveHandle(files, chosenPath, {
+          onWritable() {
             vaultLocked = true;
-            let next = "";
-            return {
-              async write(data: string) {
-                next += data;
-              },
-              async close() {
-                files.set(chosenPath, next);
-              },
-              async abort() {
-                // Chrome does not restore bytes truncated by createWritable.
-              },
-            };
           },
-          async remove() {
-            files.delete(chosenPath);
-          },
-        } as unknown as FileSystemFileHandle;
+        });
       },
     });
 
@@ -108,32 +111,13 @@ describe("writeEntryFile", () => {
 
     const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
       async showSaveFilePicker() {
-        return {
-          async getFile() {
-            // The file was already empty before this save, so its timestamp is earlier.
-            return new File([files.get(chosenPath) ?? ""], chosenPath, { lastModified: 0 });
-          },
-          async createWritable() {
-            // Chrome truncates the chosen file when the writable opens.
-            files.set(chosenPath, "");
+        return saveHandle(files, chosenPath, {
+          // The file was already empty before this save, so its timestamp is earlier.
+          lastModified: 0,
+          onWritable() {
             vaultLocked = true;
-            let next = "";
-            return {
-              async write(data: string) {
-                next += data;
-              },
-              async close() {
-                files.set(chosenPath, next);
-              },
-              async abort() {
-                // Chrome does not restore bytes truncated by createWritable.
-              },
-            };
           },
-          async remove() {
-            files.delete(chosenPath);
-          },
-        } as unknown as FileSystemFileHandle;
+        });
       },
     });
 
@@ -150,31 +134,11 @@ describe("writeEntryFile", () => {
 
     const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
       async showSaveFilePicker() {
-        return {
-          async getFile() {
-            return new File([files.get(chosenPath) ?? ""], chosenPath);
+        return saveHandle(files, chosenPath, {
+          onWrite() {
+            vaultLocked = true;
           },
-          async createWritable() {
-            // Chrome truncates the chosen file when the writable opens.
-            files.set(chosenPath, "");
-            let next = "";
-            return {
-              async write(data: string) {
-                next += data;
-                vaultLocked = true;
-              },
-              async close() {
-                files.set(chosenPath, next);
-              },
-              async abort() {
-                // Chrome does not restore bytes truncated by createWritable.
-              },
-            };
-          },
-          async remove() {
-            files.delete(chosenPath);
-          },
-        } as unknown as FileSystemFileHandle;
+        });
       },
     });
 
@@ -189,32 +153,13 @@ describe("writeEntryFile", () => {
 
     const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
       async showSaveFilePicker() {
-        return {
-          async getFile() {
-            // The file was already empty before this save, so its timestamp is earlier.
-            return new File([files.get(chosenPath) ?? ""], chosenPath, { lastModified: 0 });
+        return saveHandle(files, chosenPath, {
+          // The file was already empty before this save, so its timestamp is earlier.
+          lastModified: 0,
+          onWrite() {
+            vaultLocked = true;
           },
-          async createWritable() {
-            // Chrome truncates the chosen file when the writable opens.
-            files.set(chosenPath, "");
-            let next = "";
-            return {
-              async write(data: string) {
-                next += data;
-                vaultLocked = true;
-              },
-              async close() {
-                files.set(chosenPath, next);
-              },
-              async abort() {
-                // Chrome does not restore bytes truncated by createWritable.
-              },
-            };
-          },
-          async remove() {
-            files.delete(chosenPath);
-          },
-        } as unknown as FileSystemFileHandle;
+        });
       },
     });
 
@@ -232,31 +177,11 @@ describe("writeEntryFile", () => {
       async showSaveFilePicker() {
         // The save picker creates the chosen file before it resolves.
         files.set(chosenPath, "");
-        return {
-          async getFile() {
-            return new File([files.get(chosenPath) ?? ""], chosenPath);
-          },
-          async createWritable() {
-            // Chrome truncates the chosen file when the writable opens.
-            files.set(chosenPath, "");
+        return saveHandle(files, chosenPath, {
+          onWritable() {
             vaultLocked = true;
-            let next = "";
-            return {
-              async write(data: string) {
-                next += data;
-              },
-              async close() {
-                files.set(chosenPath, next);
-              },
-              async abort() {
-                // Chrome does not restore bytes truncated by createWritable.
-              },
-            };
           },
-          async remove() {
-            files.delete(chosenPath);
-          },
-        } as unknown as FileSystemFileHandle;
+        });
       },
     });
 
@@ -273,31 +198,11 @@ describe("writeEntryFile", () => {
       async showSaveFilePicker() {
         // The save picker creates the chosen file before it resolves.
         files.set(chosenPath, "");
-        return {
-          async getFile() {
-            return new File([files.get(chosenPath) ?? ""], chosenPath);
+        return saveHandle(files, chosenPath, {
+          onWrite() {
+            vaultLocked = true;
           },
-          async createWritable() {
-            // Chrome truncates the chosen file when the writable opens.
-            files.set(chosenPath, "");
-            let next = "";
-            return {
-              async write(data: string) {
-                next += data;
-                vaultLocked = true;
-              },
-              async close() {
-                files.set(chosenPath, next);
-              },
-              async abort() {
-                // Chrome does not restore bytes truncated by createWritable.
-              },
-            };
-          },
-          async remove() {
-            files.delete(chosenPath);
-          },
-        } as unknown as FileSystemFileHandle;
+        });
       },
     });
 
@@ -313,28 +218,11 @@ describe("writeEntryFile", () => {
 
     const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
       async showSaveFilePicker() {
-        return {
-          async getFile() {
-            return new File([files.get(chosenPath) ?? ""], chosenPath);
+        return saveHandle(files, chosenPath, {
+          onClose() {
+            vaultLocked = true;
           },
-          async createWritable() {
-            files.set(chosenPath, "");
-            let next = "";
-            return {
-              async write(data: string) {
-                next += data;
-              },
-              async close() {
-                files.set(chosenPath, next);
-                vaultLocked = true;
-              },
-              async abort() {},
-            };
-          },
-          async remove() {
-            files.delete(chosenPath);
-          },
-        } as unknown as FileSystemFileHandle;
+        });
       },
     });
 
@@ -350,30 +238,13 @@ describe("writeEntryFile", () => {
     await expect(
       writeEntryFile('{"version":1,"entries":[]}\n', () => true, {
         async showSaveFilePicker() {
-          return {
-            async getFile() {
-              return new File([files.get(chosenPath) ?? ""], chosenPath);
+          return saveHandle(files, chosenPath, {
+            onWrite(data) {
+              if (data !== previous) {
+                throw new Error("disk full");
+              }
             },
-            async createWritable() {
-              files.set(chosenPath, "");
-              let next = "";
-              return {
-                async write(data: string) {
-                  if (data !== previous) {
-                    throw new Error("disk full");
-                  }
-                  next += data;
-                },
-                async close() {
-                  files.set(chosenPath, next);
-                },
-                async abort() {},
-              };
-            },
-            async remove() {
-              files.delete(chosenPath);
-            },
-          } as unknown as FileSystemFileHandle;
+          });
         },
       }),
     ).rejects.toThrow("disk full");
@@ -389,30 +260,11 @@ describe("writeEntryFile", () => {
     const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
       async showSaveFilePicker() {
         files.set(chosenPath, "");
-        return {
-          async getFile() {
-            return new File([files.get(chosenPath) ?? ""], chosenPath);
+        return saveHandle(files, chosenPath, {
+          onClose() {
+            vaultLocked = true;
           },
-          async createWritable() {
-            files.set(chosenPath, "");
-            let next = "";
-            return {
-              async write(data: string) {
-                next += data;
-              },
-              async close() {
-                files.set(chosenPath, next);
-                vaultLocked = true;
-              },
-              async abort() {
-                // Chrome does not restore bytes truncated by createWritable.
-              },
-            };
-          },
-          async remove() {
-            files.delete(chosenPath);
-          },
-        } as unknown as FileSystemFileHandle;
+        });
       },
     });
 
@@ -428,30 +280,10 @@ describe("writeEntryFile", () => {
     const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
       async showSaveFilePicker() {
         vaultLocked = true;
-        return {
-          async getFile() {
-            // The file was already empty before this save, so its timestamp is earlier.
-            return new File([files.get(chosenPath) ?? ""], chosenPath, { lastModified: 0 });
-          },
-          async createWritable() {
-            files.set(chosenPath, "");
-            let next = "";
-            return {
-              async write(data: string) {
-                next += data;
-              },
-              async close() {
-                files.set(chosenPath, next);
-              },
-              async abort() {
-                // Chrome does not restore bytes truncated by createWritable.
-              },
-            };
-          },
-          async remove() {
-            files.delete(chosenPath);
-          },
-        } as unknown as FileSystemFileHandle;
+        return saveHandle(files, chosenPath, {
+          // The file was already empty before this save, so its timestamp is earlier.
+          lastModified: 0,
+        });
       },
     });
 
@@ -467,29 +299,13 @@ describe("writeEntryFile", () => {
 
     const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
       async showSaveFilePicker() {
-        return {
-          async getFile() {
-            // The file was already empty before this save, so its timestamp is earlier.
-            return new File([files.get(chosenPath) ?? ""], chosenPath, { lastModified: 0 });
+        return saveHandle(files, chosenPath, {
+          // The file was already empty before this save, so its timestamp is earlier.
+          lastModified: 0,
+          onClose() {
+            vaultLocked = true;
           },
-          async createWritable() {
-            files.set(chosenPath, "");
-            let next = "";
-            return {
-              async write(data: string) {
-                next += data;
-              },
-              async close() {
-                files.set(chosenPath, next);
-                vaultLocked = true;
-              },
-              async abort() {},
-            };
-          },
-          async remove() {
-            files.delete(chosenPath);
-          },
-        } as unknown as FileSystemFileHandle;
+        });
       },
     });
 
@@ -506,29 +322,14 @@ describe("writeEntryFile", () => {
     await expect(
       writeEntryFile('{"version":1,"entries":[]}\n', () => true, {
         async showSaveFilePicker() {
-          return {
-            async getFile() {
-              return new File([files.get(chosenPath) ?? ""], chosenPath);
+          return saveHandle(files, chosenPath, {
+            onWrite(data) {
+              if (data === previous) {
+                throw new Error("restore failed");
+              }
+              throw new Error("disk full");
             },
-            async createWritable() {
-              files.set(chosenPath, "");
-              return {
-                async write(data: string) {
-                  if (data === previous) {
-                    throw new Error("restore failed");
-                  }
-                  throw new Error("disk full");
-                },
-                async close() {
-                  files.set(chosenPath, previous);
-                },
-                async abort() {},
-              };
-            },
-            async remove() {
-              files.delete(chosenPath);
-            },
-          } as unknown as FileSystemFileHandle;
+          });
         },
       }),
     ).rejects.toThrow("restore failed");

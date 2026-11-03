@@ -74,5 +74,3 @@ export function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) 
     />
   );
 }
-
-export { tabsListVariants };

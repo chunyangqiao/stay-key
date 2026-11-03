@@ -94,10 +94,6 @@ export function DropdownMenuItem({
   );
 }
 
-export function DropdownMenuSub({ ...props }: MenuPrimitive.SubmenuRoot.Props) {
-  return <MenuPrimitive.SubmenuRoot data-slot="dropdown-menu-sub" {...props} />;
-}
-
 export function DropdownMenuSubTrigger({
   className,
   inset,
