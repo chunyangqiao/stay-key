@@ -28,9 +28,21 @@ const jsonPickerType: JsonPickerType = {
   accept: { "application/json": [".json"] },
 };
 
-async function discardEmptyFile(handle: FileSystemFileHandle): Promise<void> {
+function isFileCreatedForThisSave(
+  previous: string,
+  lastModified: number,
+  saveStartedAt: number,
+): boolean {
+  return previous.length === 0 && lastModified >= saveStartedAt;
+}
+
+async function discardEmptyFile(
+  handle: FileSystemFileHandle,
+  saveStartedAt: number,
+): Promise<void> {
   const existing = await handle.getFile();
-  if (existing.size > 0) {
+  const previous = await existing.text();
+  if (!isFileCreatedForThisSave(previous, existing.lastModified, saveStartedAt)) {
     return;
   }
   if (!canRemove(handle)) {
@@ -94,7 +106,7 @@ export async function writeEntryFile(
   }
 
   if (!stillCurrent()) {
-    await discardEmptyFile(handle);
+    await discardEmptyFile(handle, saveStartedAt);
     return false;
   }
 
@@ -104,9 +116,9 @@ export async function writeEntryFile(
   try {
     if (!stillCurrent()) {
       // A file created for this save is stamped during the attempt. An older empty file already existed.
-      if (previous.length === 0 && existing.lastModified >= saveStartedAt) {
+      if (isFileCreatedForThisSave(previous, existing.lastModified, saveStartedAt)) {
         await writable.abort();
-        await discardEmptyFile(handle);
+        await discardEmptyFile(handle, saveStartedAt);
         return false;
       }
       await writable.write(previous);
@@ -116,8 +128,8 @@ export async function writeEntryFile(
     await writable.write(contents);
     if (!stillCurrent()) {
       await writable.abort();
-      if (previous.length === 0 && existing.lastModified >= saveStartedAt) {
-        await discardEmptyFile(handle);
+      if (isFileCreatedForThisSave(previous, existing.lastModified, saveStartedAt)) {
+        await discardEmptyFile(handle, saveStartedAt);
         return false;
       }
       await restorePrevious(handle, previous);
@@ -125,7 +137,7 @@ export async function writeEntryFile(
     }
     await writable.close();
     if (!stillCurrent()) {
-      if (previous.length === 0) {
+      if (isFileCreatedForThisSave(previous, existing.lastModified, saveStartedAt)) {
         if (!canRemove(handle)) {
           throw new Error("Save picker cannot remove an unfinished entry file");
         }
@@ -142,11 +154,7 @@ export async function writeEntryFile(
     } catch {
       // Report the write error. Abort is only here to avoid leaving a partial file.
     }
-    try {
-      await restorePrevious(handle, previous);
-    } catch {
-      // The caller still receives the write error.
-    }
+    await restorePrevious(handle, previous);
     throw error;
   }
 }

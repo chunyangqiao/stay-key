@@ -419,4 +419,120 @@ describe("writeEntryFile", () => {
     expect(wrote).toBe(false);
     expect(files.has(chosenPath)).toBe(false);
   });
+
+  it("keeps an existing empty entry file when the vault locks after the file is chosen", async () => {
+    const chosenPath = "chosen-entries.json";
+    const files = new Map<string, string>([[chosenPath, ""]]);
+    let vaultLocked = false;
+
+    const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
+      async showSaveFilePicker() {
+        vaultLocked = true;
+        return {
+          async getFile() {
+            // The file was already empty before this save, so its timestamp is earlier.
+            return new File([files.get(chosenPath) ?? ""], chosenPath, { lastModified: 0 });
+          },
+          async createWritable() {
+            files.set(chosenPath, "");
+            let next = "";
+            return {
+              async write(data: string) {
+                next += data;
+              },
+              async close() {
+                files.set(chosenPath, next);
+              },
+              async abort() {
+                // Chrome does not restore bytes truncated by createWritable.
+              },
+            };
+          },
+          async remove() {
+            files.delete(chosenPath);
+          },
+        } as unknown as FileSystemFileHandle;
+      },
+    });
+
+    expect(wrote).toBe(false);
+    expect(files.has(chosenPath)).toBe(true);
+    expect(files.get(chosenPath)).toBe("");
+  });
+
+  it("keeps an existing empty entry file when the vault locks while the export is being saved", async () => {
+    const chosenPath = "chosen-entries.json";
+    const files = new Map<string, string>([[chosenPath, ""]]);
+    let vaultLocked = false;
+
+    const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
+      async showSaveFilePicker() {
+        return {
+          async getFile() {
+            // The file was already empty before this save, so its timestamp is earlier.
+            return new File([files.get(chosenPath) ?? ""], chosenPath, { lastModified: 0 });
+          },
+          async createWritable() {
+            files.set(chosenPath, "");
+            let next = "";
+            return {
+              async write(data: string) {
+                next += data;
+              },
+              async close() {
+                files.set(chosenPath, next);
+                vaultLocked = true;
+              },
+              async abort() {},
+            };
+          },
+          async remove() {
+            files.delete(chosenPath);
+          },
+        } as unknown as FileSystemFileHandle;
+      },
+    });
+
+    expect(wrote).toBe(false);
+    expect(files.has(chosenPath)).toBe(true);
+    expect(files.get(chosenPath)).toBe("");
+  });
+
+  it("throws when restoring the entry file fails after the export write fails", async () => {
+    const chosenPath = "chosen-entries.json";
+    const previous = "previous-export\n";
+    const files = new Map<string, string>([[chosenPath, previous]]);
+
+    await expect(
+      writeEntryFile('{"version":1,"entries":[]}\n', () => true, {
+        async showSaveFilePicker() {
+          return {
+            async getFile() {
+              return new File([files.get(chosenPath) ?? ""], chosenPath);
+            },
+            async createWritable() {
+              files.set(chosenPath, "");
+              return {
+                async write(data: string) {
+                  if (data === previous) {
+                    throw new Error("restore failed");
+                  }
+                  throw new Error("disk full");
+                },
+                async close() {
+                  files.set(chosenPath, previous);
+                },
+                async abort() {},
+              };
+            },
+            async remove() {
+              files.delete(chosenPath);
+            },
+          } as unknown as FileSystemFileHandle;
+        },
+      }),
+    ).rejects.toThrow("restore failed");
+
+    expect(files.get(chosenPath)).toBe("");
+  });
 });
