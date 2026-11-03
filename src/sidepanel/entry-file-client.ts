@@ -28,12 +28,14 @@ const jsonPickerType: JsonPickerType = {
   accept: { "application/json": [".json"] },
 };
 
+const PICKER_CREATE_SKEW_MS = 1000;
+
 function isFileCreatedForThisSave(
   previous: string,
   lastModified: number,
-  saveStartedAt: number,
+  pickerReturnedAt: number,
 ): boolean {
-  return previous.length === 0 && lastModified >= saveStartedAt;
+  return previous.length === 0 && lastModified >= pickerReturnedAt - PICKER_CREATE_SKEW_MS;
 }
 
 function canRemove(
@@ -65,7 +67,6 @@ export async function writeEntryFile(
   stillCurrent: () => boolean,
   picker: SavePicker | Window,
 ): Promise<boolean> {
-  const saveStartedAt = Date.now();
   if (!stillCurrent()) {
     return false;
   }
@@ -86,10 +87,11 @@ export async function writeEntryFile(
     throw error;
   }
 
+  const pickerReturnedAt = Date.now();
   const existing = await handle.getFile();
   const previous = await existing.text();
   if (!stillCurrent()) {
-    await revertUnfinishedSave(handle, previous, existing.lastModified, saveStartedAt);
+    await revertUnfinishedSave(handle, previous, existing.lastModified, pickerReturnedAt);
     return false;
   }
 
@@ -97,18 +99,18 @@ export async function writeEntryFile(
   try {
     if (!stillCurrent()) {
       await writable.abort();
-      await revertUnfinishedSave(handle, previous, existing.lastModified, saveStartedAt);
+      await revertUnfinishedSave(handle, previous, existing.lastModified, pickerReturnedAt);
       return false;
     }
     await writable.write(contents);
     if (!stillCurrent()) {
       await writable.abort();
-      await revertUnfinishedSave(handle, previous, existing.lastModified, saveStartedAt);
+      await revertUnfinishedSave(handle, previous, existing.lastModified, pickerReturnedAt);
       return false;
     }
     await writable.close();
     if (!stillCurrent()) {
-      await revertUnfinishedSave(handle, previous, existing.lastModified, saveStartedAt);
+      await revertUnfinishedSave(handle, previous, existing.lastModified, pickerReturnedAt);
       return false;
     }
     return true;
@@ -127,9 +129,9 @@ async function revertUnfinishedSave(
   handle: FileSystemFileHandle,
   previous: string,
   lastModified: number,
-  saveStartedAt: number,
+  pickerReturnedAt: number,
 ): Promise<void> {
-  if (isFileCreatedForThisSave(previous, lastModified, saveStartedAt)) {
+  if (isFileCreatedForThisSave(previous, lastModified, pickerReturnedAt)) {
     if (!canRemove(handle)) {
       throw new Error("Save picker cannot remove an unfinished entry file");
     }

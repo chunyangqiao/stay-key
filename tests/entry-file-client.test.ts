@@ -272,6 +272,29 @@ describe("writeEntryFile", () => {
     expect(files.has(chosenPath)).toBe(false);
   });
 
+  it("keeps an existing empty entry file written after export was clicked", async () => {
+    const chosenPath = "chosen-entries.json";
+    const files = new Map<string, string>([[chosenPath, ""]]);
+    let vaultLocked = false;
+
+    const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
+      async showSaveFilePicker() {
+        const touchedAt = Date.now();
+        await new Promise((resolve) => {
+          setTimeout(resolve, 1_500);
+        });
+        vaultLocked = true;
+        return saveHandle(files, chosenPath, {
+          lastModified: touchedAt,
+        });
+      },
+    });
+
+    expect(wrote).toBe(false);
+    expect(files.has(chosenPath)).toBe(true);
+    expect(files.get(chosenPath)).toBe("");
+  });
+
   it("keeps an existing empty entry file when the vault locks after the file is chosen", async () => {
     const chosenPath = "chosen-entries.json";
     const files = new Map<string, string>([[chosenPath, ""]]);
