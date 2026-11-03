@@ -8,13 +8,13 @@
 
 Publish from a push to `main` or `beta`.
 
-A release runs when `.changeset/` contains a changeset markdown file other than `README.md`. Add that file on the feature branch with `pnpm exec changeset`, and merge it with the change. A push with no pending changeset succeeds and leaves the Release list unchanged. The baseline `0.1.0` is not a GitHub Release.
+A release runs when a changeset markdown file other than `README.md` sits directly in `.changeset/`. Add that file on the feature branch with `pnpm exec changeset`, and merge it with the change. A push with no pending changeset succeeds and leaves the Release list unchanged. The baseline `0.1.0` is not a GitHub Release.
 
 `changeset version` on the release branch writes the new version into `package.json` and `CHANGELOG.md`. Leave that bump to CI.
 
 `beta` stays in changesets pre mode through `.changeset/pre.json` (`mode` is `pre`, `tag` is `beta`). The first bump in a pre cycle applies the changeset type, so `0.1.0` plus a patch becomes `0.1.1-beta.0`. Later changesets in that same cycle increment the beta number. `main` releases a plain version, such as `0.1.1`.
 
-Keep `.changeset/pre.json` on `beta`. Remove it from any change that merges to `main`. The `main` release fails while that file is present and a changeset is still pending. A changeset already consumed on `beta` does not publish `main`. Add a changeset to the `main` merge for the stable release.
+Keep `.changeset/pre.json` on `beta`. On the change that merges to `main`, delete `.changeset/pre.json` and move the markdown files in `.changeset/pre/` back to `.changeset/`. Do not run `pnpm exec changeset` again for that same change. The release job treats only `.changeset/*.md` as pending, so a file left in `.changeset/pre/` does not start a `main` release. `changeset version` still reads `.changeset/pre/`, and a second changeset is published beside those files. The `main` release fails while `.changeset/pre.json` is present and a changeset is still pending.
 
 ## What CI publishes
 

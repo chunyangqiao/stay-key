@@ -9,11 +9,11 @@
   
 ## Linting and formatting  
   
-- After making code changes, run `pnpm exec oxlint --fix src`, then run `pnpm exec oxfmt src`.  
-- Before finishing, run `pnpm exec oxlint --deny-warnings --format=agent src`.  
-- `pnpm lint` checks `src/` with `oxlint` and `oxfmt --check`. `pnpm lint:fix` runs `oxlint --fix src` and `oxfmt --write src`.  
-- `pnpm fmt` runs `oxfmt --write src`. `pnpm fmt:check` runs `oxfmt --check src`.  
-- The pre-commit hook runs `pnpm exec lint-staged`, which applies `oxlint --fix` and `oxfmt --write` to staged files under `src/`.  
+- After making code changes, run `pnpm exec oxlint --fix src tests`, then run `pnpm exec oxfmt src tests`.  
+- Before finishing, run `pnpm exec oxlint --deny-warnings --format=agent src tests`.  
+- `pnpm lint` checks `src/` and `tests/` with `oxlint` and `oxfmt --check`. `pnpm lint:fix` runs `oxlint --fix src tests` and `oxfmt --write src tests`.  
+- `pnpm fmt` runs `oxfmt --write src tests`. `pnpm fmt:check` runs `oxfmt --check src tests`.  
+- The pre-commit hook runs `pnpm exec lint-staged`, which applies `oxlint --fix` and `oxfmt --write` to staged files under `src/` and `tests/`.  
   
 ## Environment Requirements  
   
@@ -28,8 +28,9 @@ Stay Key is a Manifest V3 Chrome extension. Vite and CRXJS build these contexts:
 - `src/background` is the service worker for session and messaging.
 - `src/index.css` is the shared Tailwind CSS entry imported by UI contexts.
 - `src/shared` holds modules used by more than one context. It is grouped into `crypto`, `session`, `vault`, `entries`, `chrome`, `settings`, and `onboarding`. `constants`, `bytes`, `error-message`, and `utils` stay at the `src/shared` root.
+- `tests/` at the repo root holds every Vitest file. Name a file `*.test.ts` and import the module under test with a relative path into `src/`. Vite does not bundle `tests/`.
 
-Sidepanel does not import `src/background`. Put a module that more than one context imports in `src/shared`.
+Sidepanel does not import `src/background`. Put a module that more than one context imports in `src/shared`. Files under `src/` prefer the `@/` alias for project imports.
 
 ## User-State Safety  
   
@@ -47,7 +48,7 @@ Sidepanel does not import `src/background`. Put a module that more than one cont
 `main` publishes a stable GitHub Release. `beta` publishes a prerelease. Feature-branch pushes do not publish. Read `docs/engineering/release.md` before adding a changeset, changing the package version, editing `.github/workflows/release.yml`, or changing the manifest version in `manifest.config.ts`.
 
 - Ship a change with `pnpm exec changeset` on the feature branch. CI on `main` or `beta` runs `changeset version`, builds, and attaches `release/stay-key-<version>.zip` to Release `v<version>`.
-- Keep `.changeset/pre.json` on `beta`. Remove it from any change that merges to `main`. A changeset consumed on `beta` does not publish `main`; add a changeset to the `main` merge.
+- Keep `.changeset/pre.json` on `beta`. On the change that merges to `main`, delete `.changeset/pre.json` and move the markdown files in `.changeset/pre/` back to `.changeset/`. Do not add a second changeset for the same change.
 - Leave the version bump to CI. The CI commit subject is `chore: version packages`.
 - `manifest.config.ts` stores the changesets version in `version_name` and a Chrome-safe `version`. The settings screens show `version_name`. For one semver, the beta manifest `version` is greater than the stable `version`.
 

@@ -12,38 +12,21 @@ import { loadVaultPayload, vaultExists } from "../vault/vault";
 
 import type { PersistedVault, VaultPayload } from "../vault/vault-types";
 
-export type AppScreen =
-  | "welcome"
-  | "master"
-  | "question"
-  | "unlock"
-  | "recover"
-  | "reset"
-  | "home"
-  | "settings"
-  | "settings-general"
-  | "settings-shortcuts"
-  | "settings-security"
-  | "settings-clipboard"
-  | "settings-about"
-  | "settings-recovery";
-
 type SessionStore = {
   hydrated: boolean;
   hasVault: boolean;
   unlocked: boolean;
-  screen: AppScreen;
+  /** Bumps at the start of lock so an in-flight import or export can abort. */
+  sessionEpoch: number;
   vault: PersistedVault | undefined;
   payload: VaultPayload | undefined;
   /** In-memory data-encryption key; never written to disk storage.local. */
   dek: CryptoKey | undefined;
   hydrate: () => Promise<void>;
-  setScreen: (screen: AppScreen) => void;
   setUnlockedSession: (input: {
     dek: CryptoKey;
     vault: PersistedVault;
     payload: VaultPayload;
-    screen: AppScreen;
   }) => Promise<void>;
   lock: () => Promise<void>;
   touchActivity: () => Promise<void>;
@@ -55,7 +38,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   hydrated: false,
   hasVault: false,
   unlocked: false,
-  screen: "welcome",
+  sessionEpoch: 0,
   vault: undefined,
   payload: undefined,
   dek: undefined,
@@ -73,7 +56,6 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         vault: undefined,
         payload: undefined,
         dek: undefined,
-        screen: "welcome",
       });
       return;
     }
@@ -93,7 +75,6 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
             vault,
             payload,
             dek,
-            screen: "home",
           });
           return;
         } catch {
@@ -111,13 +92,10 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       vault,
       payload: undefined,
       dek: undefined,
-      screen: "unlock",
     });
   },
 
-  setScreen: (screen) => set({ screen }),
-
-  setUnlockedSession: async ({ dek, vault, payload, screen }) => {
+  setUnlockedSession: async ({ dek, vault, payload }) => {
     const dekRaw = await exportDekRaw(dek);
     await writeUnlockedSession({ dekRaw, lastActivityAt: Date.now() });
     set({
@@ -126,18 +104,17 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       dek,
       vault,
       payload,
-      screen,
     });
   },
 
   lock: async () => {
-    await clearUnlockedSession();
     set((state) => ({
+      sessionEpoch: state.sessionEpoch + 1,
       unlocked: false,
       dek: undefined,
       payload: undefined,
-      screen: state.hasVault ? "unlock" : "welcome",
     }));
+    await clearUnlockedSession();
   },
 
   touchActivity: async () => {
@@ -160,3 +137,12 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     set({ vault });
   },
 }));
+
+export function sessionStamp(): number {
+  return useSessionStore.getState().sessionEpoch;
+}
+
+export function sessionIsCurrent(stamp: number): boolean {
+  const state = useSessionStore.getState();
+  return state.unlocked && state.sessionEpoch === stamp;
+}

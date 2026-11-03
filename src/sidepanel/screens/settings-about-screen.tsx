@@ -1,25 +1,25 @@
 import * as React from "react";
 
+import { useNavigate } from "react-router";
 import { ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { openExternalUrl } from "@/shared/chrome/open-chrome-page";
 import { GITHUB_ISSUES_URL } from "@/shared/settings/settings-options";
-import { useSessionStore } from "@/shared/session/session-store";
-
 import { AppHeader } from "../components/app-header";
+import { panelPaths } from "../paths";
 import { Screen, ScreenBody } from "../components/screen";
 
 const manifest = chrome.runtime.getManifest();
 const VERSION = manifest.version_name ?? manifest.version;
 
 export function SettingsAboutScreen() {
-  const setScreen = useSessionStore((state) => state.setScreen);
+  const navigate = useNavigate();
   const [showRisk, setShowRisk] = React.useState(false);
 
   return (
     <Screen>
-      <AppHeader title="关于" onBack={() => setScreen("settings")} />
+      <AppHeader title="关于" onBack={() => void navigate(panelPaths.settings)} />
       <ScreenBody className="px-4 py-7">
         <div className="flex flex-col items-center gap-2 text-center">
           <img src="/icon48.png" alt="" width={48} height={48} className="size-12 rounded-full" />

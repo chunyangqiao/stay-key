@@ -2,7 +2,7 @@ export const VAULT_STORAGE_KEY = "stay-key.vault";
 
 /** Master secret is a 6-digit numeric PIN (PRD v0.7). */
 export const MASTER_PIN_LENGTH = 6;
-export const MASTER_PIN_PATTERN = /^\d{6}$/;
+const masterPinPattern = /^\d{6}$/;
 
 export const RECOVERY_ANSWER_MIN_LENGTH = 8;
 
@@ -26,7 +26,7 @@ export const IV_BYTE_LENGTH = 12;
 export const AES_KEY_BITS = 256;
 
 export function isValidMasterPin(value: string): boolean {
-  return MASTER_PIN_PATTERN.test(value);
+  return masterPinPattern.test(value);
 }
 
 /** Keep digits only, truncate to MASTER_PIN_LENGTH. */

@@ -1,12 +1,14 @@
 import * as React from "react";
 
+import { useNavigate } from "react-router";
+
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSessionStore } from "@/shared/session/session-store";
 import { unlockWithRecoveryAnswer } from "@/shared/vault/vault";
-
 import { BrandHeader } from "../components/app-header";
+import { clearStagedAppPath, panelPaths, stageAppPath } from "../paths";
 import { Screen, ScreenBody } from "../components/screen";
 
 function formatCooldown(until: number | undefined): string {
@@ -19,7 +21,7 @@ function formatCooldown(until: number | undefined): string {
 }
 
 export function RecoverScreen() {
-  const setScreen = useSessionStore((state) => state.setScreen);
+  const navigate = useNavigate();
   const setUnlockedSession = useSessionStore((state) => state.setUnlockedSession);
   const vault = useSessionStore((state) => state.vault);
 
@@ -40,12 +42,16 @@ export function RecoverScreen() {
       const result = await unlockWithRecoveryAnswer(answer);
       if (result.ok) {
         setAnswer("");
-        void setUnlockedSession({
-          dek: result.dek,
-          vault: result.vault,
-          payload: result.payload,
-          screen: "reset",
-        });
+        stageAppPath(panelPaths.reset);
+        try {
+          await setUnlockedSession({
+            dek: result.dek,
+            vault: result.vault,
+            payload: result.payload,
+          });
+        } catch {
+          clearStagedAppPath();
+        }
         return;
       }
 
@@ -126,7 +132,7 @@ export function RecoverScreen() {
           {pending ? "验证中…" : "验证并继续"}
         </Button>
 
-        <Button variant="link" className="mt-7" onClick={() => setScreen("unlock")}>
+        <Button variant="link" className="mt-7" onClick={() => void navigate(panelPaths.unlock)}>
           返回解锁
         </Button>
       </ScreenBody>

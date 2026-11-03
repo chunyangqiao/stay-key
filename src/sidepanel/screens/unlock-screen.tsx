@@ -1,15 +1,17 @@
 import * as React from "react";
 
+import { useNavigate } from "react-router";
+
 import { Button } from "@/components/ui/button";
 import { isValidMasterPin } from "@/shared/constants";
 import { useSessionStore } from "@/shared/session/session-store";
 import { unlockWithMasterPassword } from "@/shared/vault/vault";
-
 import { MasterPinOtp } from "../components/master-pin-otp";
+import { panelPaths } from "../paths";
 import { Screen, ScreenBody } from "../components/screen";
 
 export function UnlockScreen() {
-  const setScreen = useSessionStore((state) => state.setScreen);
+  const navigate = useNavigate();
   const setUnlockedSession = useSessionStore((state) => state.setUnlockedSession);
   const vault = useSessionStore((state) => state.vault);
 
@@ -44,7 +46,6 @@ export function UnlockScreen() {
             dek: result.dek,
             vault: result.vault,
             payload: result.payload,
-            screen: "home",
           });
           return;
         }
@@ -119,7 +120,7 @@ export function UnlockScreen() {
           variant="link"
           className="mt-8"
           disabled={coolingDown}
-          onClick={() => setScreen("recover")}
+          onClick={() => void navigate(panelPaths.recover)}
         >
           忘记主密码？
         </Button>

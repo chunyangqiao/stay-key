@@ -1,0 +1,7 @@
+# Entry files are plaintext JSON
+
+Entries leave the vault as a plaintext JSON entry file so a person can batch-edit them and import them again. An encrypted bundle would stay inside Stay Key's PIN, which does not serve that interchange. The file holds `version` and entries (`host`, `username`, `password`, `tags`) only. Import and export run while the vault is unlocked. Export warns that locking the vault does not encrypt the file. Import merges: an exact match is skipped, an entry whose host, username, and password are all empty is left out, anything else is appended, and entries absent from the file stay. An invalid file writes nothing.
+
+Considered options: an encrypted file only Stay Key can read; a CSV of the same fields.
+
+Consequences: the chosen file is a copy of passwords outside the vault. The user picks where it is saved. A host is the site string already stored on the entry, not a URL parsed into a hostname. Import ignores a leading BOM and fields outside that shape, and treats a missing tags field as no tags. Export leaves out an entry whose host, username, and password are all empty, even when it has tags. Import skips that entry and still writes the other entries. A string of spaces is not empty. If the vault locks before that write finishes, a new entry file is removed and an existing entry file is restored to the bytes from before the write. A failed write restores those same bytes. Once lock has started, the import leaves the vault unchanged.

@@ -1,4 +1,6 @@
 import * as React from "react";
+
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -10,12 +12,12 @@ import { RECOVERY_ANSWER_MIN_LENGTH } from "@/shared/constants";
 import { getErrorMessage } from "@/shared/error-message";
 import { useSessionStore } from "@/shared/session/session-store";
 import { updateRecoveryCredentials } from "@/shared/vault/vault";
-
 import { AppHeader } from "../components/app-header";
+import { panelPaths } from "../paths";
 import { Screen, ScreenBody } from "../components/screen";
 
 export function SettingsRecoveryScreen() {
-  const setScreen = useSessionStore((state) => state.setScreen);
+  const navigate = useNavigate();
   const dek = useSessionStore((state) => state.dek);
   const vault = useSessionStore((state) => state.vault);
   const applyVault = useSessionStore((state) => state.applyVault);
@@ -58,7 +60,7 @@ export function SettingsRecoveryScreen() {
       setAnswer("");
       setAcceptedRisk(false);
       toast.success("安全提示问题已更新");
-      setScreen("settings");
+      void navigate(panelPaths.settings);
     } catch (caught) {
       setError(getErrorMessage(caught));
     } finally {
@@ -68,7 +70,7 @@ export function SettingsRecoveryScreen() {
 
   return (
     <Screen>
-      <AppHeader title="安全提示问题" onBack={() => setScreen("settings")} />
+      <AppHeader title="安全提示问题" onBack={() => void navigate(panelPaths.settings)} />
       <ScreenBody className="px-4 py-5">
         <p className="text-sm text-muted-foreground">
           当前问题仅供查看。更新时需设置新的问题与答案；不会清空保险库条目。

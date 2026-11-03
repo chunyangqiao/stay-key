@@ -16,6 +16,7 @@ The extension UI is currently Simplified Chinese.
 - **Current site** — list entries that match the active tab, including parent domains and subdomains. When nothing is saved yet, create an entry pre-filled with that host.
 - **Search** — find entries by host, username, or tag.
 - **Entries** — create, edit, and delete entries with a host, username, password, and tags.
+- **Import and export** — save every entry to a plaintext JSON file, or merge a file of the same shape back into the vault. An exact match is skipped. Entries are not overwritten or deleted. The file has no PIN, recovery question, or settings.
 - **Masked lists** — usernames are partially masked, and passwords stay out of list views.
 - **Copy** — copy an account or password. Stay Key clears the clipboard after a short delay if that value is still there. You can choose 15, 30, or 60 seconds; the default is 30.
 - **Unlock** — a 6-digit master PIN, or the recovery question and answer you write during setup. Using the answer asks you to set a new PIN.
@@ -27,7 +28,7 @@ On first launch, Stay Key asks you to set a 6-digit PIN and a recovery question,
 
 ## Security
 
-The vault stays on this computer and is encrypted. A 6-digit PIN is a short secret, so choose a recovery answer that is hard to guess. Stay Key does not defend against malware on this machine, or against someone who already has an unlocked session. Clearing the clipboard is best effort. The project has not had an independent audit. Removing the extension deletes its data, and there is no import or export yet.
+The vault stays on this computer and is encrypted. A 6-digit PIN is a short secret, so choose a recovery answer that is hard to guess. Stay Key does not defend against malware on this machine, or against someone who already has an unlocked session. Clearing the clipboard is best effort. The project has not had an independent audit. Removing the extension deletes its data. An exported entry file is plaintext JSON: locking the vault does not encrypt that file, and you choose where it is saved.
 
 ## Getting started
 
@@ -52,7 +53,6 @@ The production build is written to `dist/`, and a zip archive is written to `rel
 
 - Browser autofill
 - Cloud or cross-device sync
-- Import and export
 - Password generation
 - Interface languages other than Simplified Chinese
 
