@@ -1,5 +1,6 @@
+import * as React from "react";
+
 import { ChevronRight, type LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
 
 import { cn } from "@/shared/utils";
 
@@ -145,7 +146,7 @@ export function SettingsGroup({
   children,
   className,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
   className?: string;
 }) {
   return (
@@ -175,6 +176,27 @@ export function SettingsNavRow({
         {value ? <span className="truncate">{value}</span> : null}
         <ChevronRight className="size-4 shrink-0" aria-hidden />
       </span>
+    </button>
+  );
+}
+
+export function SettingsActionRow({
+  label,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex h-11 w-full items-center px-3 text-left text-sm font-medium text-foreground transition-colors border-t border-border first:border-t-0 hover:bg-foreground/[0.03] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring disabled:opacity-50"
+    >
+      {label}
     </button>
   );
 }

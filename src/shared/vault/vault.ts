@@ -325,13 +325,21 @@ export async function saveVaultPayload(
   dek: CryptoKey,
   vault: PersistedVault,
   payload: VaultPayload,
-): Promise<PersistedVault> {
+  stillCurrent: () => boolean = () => true,
+): Promise<PersistedVault | undefined> {
   const encrypted = await encryptAesGcm(dek, encodeUtf8(JSON.stringify(payload)));
+  if (!stillCurrent()) {
+    return undefined;
+  }
   const next: PersistedVault = {
     ...vault,
     payload: blobToStored(encrypted),
   };
   await writePersistedVault(next);
+  if (!stillCurrent()) {
+    await writePersistedVault(vault);
+    return undefined;
+  }
   return next;
 }
 

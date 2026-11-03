@@ -1,8 +1,10 @@
+import { useNavigate } from "react-router";
+
 import { Button } from "@/components/ui/button";
-import { useSessionStore } from "@/shared/session/session-store";
+import { panelPaths } from "../paths";
 
 export function WelcomeScreen() {
-  const setScreen = useSessionStore((state) => state.setScreen);
+  const navigate = useNavigate();
 
   return (
     <div className="flex h-full flex-col px-4 pb-16">
@@ -12,7 +14,7 @@ export function WelcomeScreen() {
         <p className="mt-2 max-w-[24rem] text-center text-sm leading-5 text-muted-foreground">
           本机密文保管账号与密码。
         </p>
-        <Button className="mt-8 w-full" onClick={() => setScreen("master")}>
+        <Button className="mt-8 w-full" onClick={() => void navigate(panelPaths.setupPin)}>
           开始设置
         </Button>
       </div>

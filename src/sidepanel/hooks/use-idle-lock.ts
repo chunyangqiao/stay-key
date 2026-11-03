@@ -1,9 +1,10 @@
 import * as React from "react";
+
 import { toast } from "sonner";
 
 import { useSessionStore } from "@/shared/session/session-store";
 
-const ACTIVITY_EVENTS = ["pointerdown", "keydown", "scroll", "input"] as const;
+const activityEvents = ["pointerdown", "keydown", "scroll", "input"] as const;
 
 /**
  * While unlocked, bump session activity on user input and auto-lock after idleLockMs.
@@ -28,7 +29,7 @@ export function useIdleLock() {
       void touchActivity();
     };
 
-    for (const eventName of ACTIVITY_EVENTS) {
+    for (const eventName of activityEvents) {
       window.addEventListener(eventName, onActivity, { passive: true });
     }
 
@@ -57,7 +58,7 @@ export function useIdleLock() {
     }, 5_000);
 
     return () => {
-      for (const eventName of ACTIVITY_EVENTS) {
+      for (const eventName of activityEvents) {
         window.removeEventListener(eventName, onActivity);
       }
       chrome.idle.onStateChanged.removeListener(onIdleStateChanged);

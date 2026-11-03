@@ -1,16 +1,17 @@
 import * as React from "react";
 
+import { useNavigate } from "react-router";
+
 import { Button } from "@/components/ui/button";
 import { isValidMasterPin } from "@/shared/constants";
 import { setPendingMasterPassword } from "@/shared/onboarding/onboarding-draft";
-import { useSessionStore } from "@/shared/session/session-store";
-
 import { BrandHeader } from "../components/app-header";
+import { panelPaths } from "../paths";
 import { MasterPinOtp } from "../components/master-pin-otp";
 import { Screen, ScreenBody } from "../components/screen";
 
 export function MasterPasswordScreen() {
-  const setScreen = useSessionStore((state) => state.setScreen);
+  const navigate = useNavigate();
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | undefined>();
 
@@ -21,7 +22,7 @@ export function MasterPasswordScreen() {
     }
     setError(undefined);
     setPendingMasterPassword(password);
-    setScreen("question");
+    void navigate(panelPaths.setupRecovery);
   }
 
   return (

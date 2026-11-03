@@ -1,4 +1,6 @@
 import * as React from "react";
+
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -15,13 +17,13 @@ import {
 } from "@/shared/onboarding/onboarding-draft";
 import { useSessionStore } from "@/shared/session/session-store";
 import { createVault } from "@/shared/vault/vault";
-
 import { BrandHeader } from "../components/app-header";
+import { panelPaths } from "../paths";
 import { Screen, ScreenBody } from "../components/screen";
 
 export function RecoveryQuestionScreen() {
+  const navigate = useNavigate();
   const setUnlockedSession = useSessionStore((state) => state.setUnlockedSession);
-  const setScreen = useSessionStore((state) => state.setScreen);
 
   const [question, setQuestion] = React.useState("");
   const [answer, setAnswer] = React.useState("");
@@ -40,7 +42,7 @@ export function RecoveryQuestionScreen() {
     const masterPassword = takePendingMasterPassword();
     if (!masterPassword) {
       setError("主密码已失效，请返回重新设置。");
-      setScreen("master");
+      void navigate(panelPaths.setupPin);
       return;
     }
 
@@ -57,7 +59,6 @@ export function RecoveryQuestionScreen() {
         dek,
         vault,
         payload: { entries: [] },
-        screen: "home",
       });
       toast.success("保险库已就绪");
     } catch (caught) {
@@ -75,7 +76,7 @@ export function RecoveryQuestionScreen() {
         <button
           type="button"
           className="mb-3 flex items-center gap-1 text-left text-title font-semibold text-foreground"
-          onClick={() => setScreen("master")}
+          onClick={() => void navigate(panelPaths.setupPin)}
         >
           <span aria-hidden className="text-lg leading-none">
             ←

@@ -1,12 +1,18 @@
-import type { ReactNode } from "react";
+import * as React from "react";
 
 import { cn } from "@/shared/utils";
 
-export function Screen({ children, className }: { children: ReactNode; className?: string }) {
+export function Screen({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={cn("flex h-full min-h-0 flex-col", className)}>{children}</div>;
 }
 
-export function ScreenBody({ children, className }: { children: ReactNode; className?: string }) {
+export function ScreenBody({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain", className)}>
       {children}
@@ -14,7 +20,13 @@ export function ScreenBody({ children, className }: { children: ReactNode; class
   );
 }
 
-export function ScreenFooter({ children, className }: { children: ReactNode; className?: string }) {
+export function ScreenFooter({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <footer
       className={cn(
@@ -27,6 +39,12 @@ export function ScreenFooter({ children, className }: { children: ReactNode; cla
   );
 }
 
-export function SectionLabel({ children, className }: { children: ReactNode; className?: string }) {
+export function SectionLabel({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return <p className={cn("text-xs font-medium text-muted-foreground", className)}>{children}</p>;
 }

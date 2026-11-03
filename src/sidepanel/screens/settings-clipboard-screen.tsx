@@ -1,22 +1,23 @@
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { DEFAULT_CLIPBOARD_CLEAR_MS } from "@/shared/constants";
-import { CLIPBOARD_CLEAR_OPTIONS_MS } from "@/shared/settings/settings-options";
+import { clipboardClearOptionsMs } from "@/shared/settings/settings-options";
 import { useSessionStore } from "@/shared/session/session-store";
 import { updateVaultSettings } from "@/shared/vault/vault";
-
 import { AppHeader } from "../components/app-header";
+import { panelPaths } from "../paths";
 import { Screen, ScreenBody } from "../components/screen";
 import { SettingsOptionList } from "./settings-shell";
 
 export function SettingsClipboardScreen() {
-  const setScreen = useSessionStore((state) => state.setScreen);
+  const navigate = useNavigate();
   const vault = useSessionStore((state) => state.vault);
   const applyVault = useSessionStore((state) => state.applyVault);
 
   const clipboardClearMs = vault?.settings.clipboardClearMs ?? DEFAULT_CLIPBOARD_CLEAR_MS;
 
-  const options = CLIPBOARD_CLEAR_OPTIONS_MS.map((option) => ({
+  const options = clipboardClearOptionsMs.map((option) => ({
     value: option.value,
     label: `${Math.round(option.value / 1000)}秒`,
   }));
@@ -36,7 +37,7 @@ export function SettingsClipboardScreen() {
 
   return (
     <Screen>
-      <AppHeader title="清除剪贴板" onBack={() => setScreen("settings")} />
+      <AppHeader title="清除剪贴板" onBack={() => void navigate(panelPaths.settings)} />
       <ScreenBody className="px-4 py-5">
         <p className="mb-3 text-sm text-muted-foreground">复制后自动清除的等待时间</p>
         <SettingsOptionList

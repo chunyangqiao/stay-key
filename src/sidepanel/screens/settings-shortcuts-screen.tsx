@@ -1,15 +1,16 @@
 import * as React from "react";
+
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { openChromeShortcutsPage, readActionShortcut } from "@/shared/chrome/open-chrome-page";
-import { useSessionStore } from "@/shared/session/session-store";
-
 import { AppHeader } from "../components/app-header";
+import { panelPaths } from "../paths";
 import { Screen, ScreenBody, SectionLabel } from "../components/screen";
 
 export function SettingsShortcutsScreen() {
-  const setScreen = useSessionStore((state) => state.setScreen);
+  const navigate = useNavigate();
   const [shortcut, setShortcut] = React.useState<string | undefined>();
   const [loaded, setLoaded] = React.useState(false);
 
@@ -29,7 +30,7 @@ export function SettingsShortcutsScreen() {
 
   return (
     <Screen>
-      <AppHeader title="快捷操作" onBack={() => setScreen("settings")} />
+      <AppHeader title="快捷操作" onBack={() => void navigate(panelPaths.settings)} />
       <ScreenBody className="px-4 py-5">
         <SectionLabel>打开 Side Panel</SectionLabel>
         <div className="mt-2 flex items-center justify-between gap-3 border-y border-border py-2.5">
