@@ -4,7 +4,7 @@ import { Navigate, Route, Routes } from "react-router";
 
 import { useSessionStore } from "@/shared/session/session-store";
 
-import { panelPaths, regionHomePath, sessionRegion, type SessionRegion } from "./paths";
+import { panelPaths, regionHomePath, sessionRegion } from "./paths";
 import { HomeScreen } from "./screens/home-screen";
 import { MasterPasswordScreen } from "./screens/master-password-screen";
 import { RecoverScreen } from "./screens/recover-screen";
@@ -17,6 +17,8 @@ import { SettingsRecoveryScreen } from "./screens/settings-recovery-screen";
 import { SettingsSecurityScreen } from "./screens/settings-security-screen";
 import { UnlockScreen } from "./screens/unlock-screen";
 import { WelcomeScreen } from "./screens/welcome-screen";
+
+import type { SessionRegion } from "./paths";
 
 function RegionScreen({ region, children }: { region: SessionRegion; children: React.ReactNode }) {
   const hasVault = useSessionStore((state) => state.hasVault);
