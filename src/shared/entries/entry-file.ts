@@ -24,13 +24,6 @@ export type ImportPlan = {
   entries: VaultEntry[];
 };
 
-type ComparableEntry = {
-  host: string;
-  username: string;
-  password: string;
-  tags: string[];
-};
-
 export function entryFileIssueMessage(issue: EntryFileIssue): string {
   switch (issue) {
     case "invalid-json":
@@ -195,7 +188,7 @@ function isBlankEntry(host: string, username: string, password: string): boolean
   return host.length === 0 && username.length === 0 && password.length === 0;
 }
 
-function entryIdentity(entry: ComparableEntry): string {
+function entryIdentity(entry: ParsedEntry): string {
   return JSON.stringify([entry.host, entry.username, entry.password, entry.tags]);
 }
 
