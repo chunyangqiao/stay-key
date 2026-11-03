@@ -101,6 +101,47 @@ describe("writeEntryFile", () => {
     expect(files.get(chosenPath)).toBe(previous);
   });
 
+  it("keeps an existing empty entry file when the vault locks before the write finishes", async () => {
+    const chosenPath = "chosen-entries.json";
+    const files = new Map<string, string>([[chosenPath, ""]]);
+    let vaultLocked = false;
+
+    const wrote = await writeEntryFile('{"version":1,"entries":[]}\n', () => !vaultLocked, {
+      async showSaveFilePicker() {
+        return {
+          async getFile() {
+            // The file was already empty before this save, so its timestamp is earlier.
+            return new File([files.get(chosenPath) ?? ""], chosenPath, { lastModified: 0 });
+          },
+          async createWritable() {
+            // Chrome truncates the chosen file when the writable opens.
+            files.set(chosenPath, "");
+            vaultLocked = true;
+            let next = "";
+            return {
+              async write(data: string) {
+                next += data;
+              },
+              async close() {
+                files.set(chosenPath, next);
+              },
+              async abort() {
+                // Chrome does not restore bytes truncated by createWritable.
+              },
+            };
+          },
+          async remove() {
+            files.delete(chosenPath);
+          },
+        } as unknown as FileSystemFileHandle;
+      },
+    });
+
+    expect(wrote).toBe(false);
+    expect(files.has(chosenPath)).toBe(true);
+    expect(files.get(chosenPath)).toBe("");
+  });
+
   it("keeps an existing entry file's bytes when the vault locks after new bytes are written", async () => {
     const chosenPath = "chosen-entries.json";
     const previous = "previous-export\n";

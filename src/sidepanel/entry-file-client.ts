@@ -72,6 +72,7 @@ export async function writeEntryFile(
   stillCurrent: () => boolean,
   picker: SavePicker | Window,
 ): Promise<boolean> {
+  const saveStartedAt = Date.now();
   if (!stillCurrent()) {
     return false;
   }
@@ -97,11 +98,13 @@ export async function writeEntryFile(
     return false;
   }
 
-  const previous = await (await handle.getFile()).text();
+  const existing = await handle.getFile();
+  const previous = await existing.text();
   const writable = await handle.createWritable();
   try {
     if (!stillCurrent()) {
-      if (previous.length === 0) {
+      // A file created for this save is stamped during the attempt. An older empty file already existed.
+      if (previous.length === 0 && existing.lastModified >= saveStartedAt) {
         await writable.abort();
         await discardEmptyFile(handle);
         return false;

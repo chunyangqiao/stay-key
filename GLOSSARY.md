@@ -29,9 +29,9 @@ A plaintext JSON document of entries. It has no PIN, no recovery question, and n
 _Avoid_: backup, vault file
 
 **Export**:
-Writing the vault's entries out as an entry file.
+Writing the vault's entries out as an entry file. An entry whose host, account, and password are all empty is left out.
 _Avoid_: backup, sync
 
 **Import**:
-A merge of an entry file into the vault, written only after the user confirms it. An exact entry is skipped, every other entry is added, and entries missing from the file stay.
+A merge of an entry file into the vault, written only after the user confirms it. An exact entry is skipped, an entry whose host, account, and password are all empty is left out, every other entry is added, and entries missing from the file stay.
 _Avoid_: restore, replace, sync
