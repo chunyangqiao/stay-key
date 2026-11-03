@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/button";
-
 import { panelPaths } from "../paths";
 
 export function WelcomeScreen() {

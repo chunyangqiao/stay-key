@@ -12,16 +12,14 @@ import {
   parseEntryFile,
   planImport,
   serializeEntryFile,
+  type ImportPlan,
 } from "@/shared/entries/entry-file";
 import { sessionIsCurrent, sessionStamp, useSessionStore } from "@/shared/session/session-store";
 import { saveVaultPayload } from "@/shared/vault/vault";
-
 import { ConfirmDialog } from "../components/confirm-dialog";
 import { SectionLabel } from "../components/screen";
 import { isPickerAbort, readEntryFile, writeEntryFile } from "../entry-file-client";
 import { SettingsActionRow, SettingsGroup } from "./settings-shell";
-
-import type { ImportPlan } from "@/shared/entries/entry-file";
 
 type DialogState = { kind: "export" } | { kind: "import"; plan: ImportPlan };
 

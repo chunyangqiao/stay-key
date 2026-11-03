@@ -1,5 +1,6 @@
+import * as React from "react";
+
 import { ChevronRight, type LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
 
 import { cn } from "@/shared/utils";
 
@@ -145,7 +146,7 @@ export function SettingsGroup({
   children,
   className,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
   className?: string;
 }) {
   return (

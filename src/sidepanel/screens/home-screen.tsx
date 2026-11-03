@@ -46,7 +46,6 @@ import { filterEntriesForHost, hostsMatch } from "@/shared/entries/host-match";
 import { maskAccount } from "@/shared/entries/mask";
 import { useSessionStore } from "@/shared/session/session-store";
 import { saveVaultPayload } from "@/shared/vault/vault";
-
 import { BrandHeader } from "../components/app-header";
 import { panelPaths } from "../paths";
 import { EntryTags } from "../components/entry-tags";
@@ -63,12 +62,14 @@ type Draft = {
   tags: string;
 };
 
-const emptyDraft = (): Draft => ({
-  host: "",
-  username: "",
-  password: "",
-  tags: "",
-});
+function emptyDraft(): Draft {
+  return {
+    host: "",
+    username: "",
+    password: "",
+    tags: "",
+  };
+}
 
 type ListSegment = "all" | "current" | "other";
 

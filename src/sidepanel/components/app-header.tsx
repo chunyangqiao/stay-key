@@ -1,5 +1,6 @@
+import * as React from "react";
+
 import { ArrowLeft } from "lucide-react";
-import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -10,7 +11,7 @@ export function AppHeader({
 }: {
   title: string;
   onBack?: () => void;
-  actions?: ReactNode;
+  actions?: React.ReactNode;
 }) {
   return (
     <header className="flex h-12 shrink-0 items-center gap-1.5 border-b border-border px-2.5">
@@ -34,7 +35,7 @@ export function AppHeader({
   );
 }
 
-export function BrandHeader({ actions }: { actions?: ReactNode }) {
+export function BrandHeader({ actions }: { actions?: React.ReactNode }) {
   return (
     <header className="flex h-12 shrink-0 items-center gap-1.5 border-b border-border px-2.5">
       <span className="flex items-center gap-2 pl-1.5">

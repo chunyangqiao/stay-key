@@ -1,8 +1,7 @@
 import { useNavigate } from "react-router";
 import { useTheme } from "next-themes";
 
-import { THEME_OPTIONS, type ThemePreference } from "@/shared/settings/settings-options";
-
+import { themeOptions, type ThemePreference } from "@/shared/settings/settings-options";
 import { AppHeader } from "../components/app-header";
 import { panelPaths } from "../paths";
 import { Screen, ScreenBody, SectionLabel } from "../components/screen";
@@ -21,8 +20,8 @@ export function SettingsGeneralScreen() {
         <SettingsOptionList
           className="mt-2"
           name="外观"
-          options={THEME_OPTIONS}
-          value={THEME_OPTIONS.some((o) => o.value === current) ? current : "system"}
+          options={themeOptions}
+          value={themeOptions.some((o) => o.value === current) ? current : "system"}
           onChange={(next) => setTheme(next)}
         />
         <SectionLabel className="mt-6">语言</SectionLabel>

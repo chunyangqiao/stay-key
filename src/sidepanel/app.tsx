@@ -3,7 +3,6 @@ import * as React from "react";
 import { MemoryRouter } from "react-router";
 
 import { useSessionStore } from "@/shared/session/session-store";
-
 import { useIdleLock } from "./hooks/use-idle-lock";
 import { entryPathForRegion, sessionRegion } from "./paths";
 import { PanelRoutes } from "./routes";

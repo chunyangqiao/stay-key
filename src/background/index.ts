@@ -1,3 +1,4 @@
+import { DEFAULT_IDLE_LOCK_MS } from "@/shared/constants";
 import { clearUnlockedSession, readUnlockedSession } from "@/shared/session/session-persistence";
 import { readPersistedVault } from "@/shared/vault/vault-storage";
 
@@ -35,7 +36,7 @@ async function checkIdleLock(): Promise<void> {
     return;
   }
   const vault = await readPersistedVault();
-  const idleLockMs = vault?.settings.idleLockMs ?? 2 * 60 * 1000;
+  const idleLockMs = vault?.settings.idleLockMs ?? DEFAULT_IDLE_LOCK_MS;
   if (Date.now() - session.lastActivityAt >= idleLockMs) {
     await clearUnlockedSession();
   }

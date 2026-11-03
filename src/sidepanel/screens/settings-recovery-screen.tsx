@@ -12,7 +12,6 @@ import { RECOVERY_ANSWER_MIN_LENGTH } from "@/shared/constants";
 import { getErrorMessage } from "@/shared/error-message";
 import { useSessionStore } from "@/shared/session/session-store";
 import { updateRecoveryCredentials } from "@/shared/vault/vault";
-
 import { AppHeader } from "../components/app-header";
 import { panelPaths } from "../paths";
 import { Screen, ScreenBody } from "../components/screen";

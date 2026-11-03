@@ -5,7 +5,6 @@ import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { isValidMasterPin } from "@/shared/constants";
 import { setPendingMasterPassword } from "@/shared/onboarding/onboarding-draft";
-
 import { BrandHeader } from "../components/app-header";
 import { panelPaths } from "../paths";
 import { MasterPinOtp } from "../components/master-pin-otp";

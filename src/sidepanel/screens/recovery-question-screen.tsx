@@ -17,7 +17,6 @@ import {
 } from "@/shared/onboarding/onboarding-draft";
 import { useSessionStore } from "@/shared/session/session-store";
 import { createVault } from "@/shared/vault/vault";
-
 import { BrandHeader } from "../components/app-header";
 import { panelPaths } from "../paths";
 import { Screen, ScreenBody } from "../components/screen";

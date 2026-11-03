@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSessionStore } from "@/shared/session/session-store";
 import { unlockWithRecoveryAnswer } from "@/shared/vault/vault";
-
 import { BrandHeader } from "../components/app-header";
 import { clearStagedAppPath, panelPaths, stageAppPath } from "../paths";
 import { Screen, ScreenBody } from "../components/screen";

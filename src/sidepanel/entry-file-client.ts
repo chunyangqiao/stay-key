@@ -23,7 +23,7 @@ type PickerWindow = Window & {
   }) => Promise<FileSystemFileHandle>;
 };
 
-const JSON_PICKER_TYPE: JsonPickerType = {
+const jsonPickerType: JsonPickerType = {
   description: "JSON",
   accept: { "application/json": [".json"] },
 };
@@ -61,7 +61,7 @@ export async function readEntryFile(): Promise<string> {
 
   const [handle] = await picker.showOpenFilePicker({
     multiple: false,
-    types: [JSON_PICKER_TYPE],
+    types: [jsonPickerType],
   });
   const file = await handle.getFile();
   return file.text();
@@ -84,7 +84,7 @@ export async function writeEntryFile(
   try {
     handle = await picker.showSaveFilePicker({
       suggestedName: ENTRY_FILE_NAME,
-      types: [JSON_PICKER_TYPE],
+      types: [jsonPickerType],
     });
   } catch (error) {
     if (isPickerAbort(error) || !stillCurrent()) {

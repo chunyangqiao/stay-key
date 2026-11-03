@@ -9,7 +9,6 @@ import { isValidMasterPin } from "@/shared/constants";
 import { getErrorMessage } from "@/shared/error-message";
 import { useSessionStore } from "@/shared/session/session-store";
 import { resetMasterPassword } from "@/shared/vault/vault";
-
 import { BrandHeader } from "../components/app-header";
 import { panelPaths } from "../paths";
 import { MasterPinOtp } from "../components/master-pin-otp";

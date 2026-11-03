@@ -2,10 +2,9 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { DEFAULT_IDLE_LOCK_MS } from "@/shared/constants";
-import { IDLE_LOCK_OPTIONS_MS } from "@/shared/settings/settings-options";
+import { idleLockOptionsMs } from "@/shared/settings/settings-options";
 import { useSessionStore } from "@/shared/session/session-store";
 import { updateVaultSettings } from "@/shared/vault/vault";
-
 import { AppHeader } from "../components/app-header";
 import { panelPaths } from "../paths";
 import { Screen, ScreenBody } from "../components/screen";
@@ -42,7 +41,7 @@ export function SettingsSecurityScreen() {
         </p>
         <SettingsOptionList
           name="空闲自动锁定"
-          options={IDLE_LOCK_OPTIONS_MS}
+          options={idleLockOptionsMs}
           value={idleLockMs}
           onChange={(next) => void patchIdle(next)}
         />

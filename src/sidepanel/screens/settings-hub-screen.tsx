@@ -11,10 +11,9 @@ import {
   DEFAULT_IDLE_LOCK_MS,
   DEFAULT_LIST_MASK_ENABLED,
 } from "@/shared/constants";
-import { IDLE_LOCK_OPTIONS_MS } from "@/shared/settings/settings-options";
+import { idleLockOptionsMs } from "@/shared/settings/settings-options";
 import { useSessionStore } from "@/shared/session/session-store";
 import { updateVaultSettings } from "@/shared/vault/vault";
-
 import { AppHeader } from "../components/app-header";
 import { panelPaths } from "../paths";
 import { Screen, ScreenBody, ScreenFooter, SectionLabel } from "../components/screen";
@@ -38,7 +37,7 @@ export function SettingsHubScreen() {
     vault?.settings.currentSiteSegmentEnabled ?? DEFAULT_CURRENT_SITE_SEGMENT_ENABLED;
 
   const idleLabel =
-    IDLE_LOCK_OPTIONS_MS.find((option) => option.value === idleLockMs)?.label ??
+    idleLockOptionsMs.find((option) => option.value === idleLockMs)?.label ??
     `${Math.round(idleLockMs / 60_000)} 分钟`;
   const clipboardSeconds = Math.round(clipboardClearMs / 1000);
   const isDark = resolvedTheme === "dark";
