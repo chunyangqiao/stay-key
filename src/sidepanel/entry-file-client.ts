@@ -116,7 +116,7 @@ export async function writeEntryFile(
     await writable.write(contents);
     if (!stillCurrent()) {
       await writable.abort();
-      if (previous.length === 0) {
+      if (previous.length === 0 && existing.lastModified >= saveStartedAt) {
         await discardEmptyFile(handle);
         return false;
       }
